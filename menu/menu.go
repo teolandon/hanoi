@@ -1,8 +1,6 @@
 package menu
 
-type Menu struct {
-	Items []MenuItem
-}
+type Menu []*MenuItem
 
 type MenuItem interface {
 	Name() string
@@ -38,10 +36,10 @@ func (m IntMenuItem) SetValue(newVal int) {
 	m.value = newVal
 }
 
-func NewFuncMenuItem(name string, function func()) FuncMenuItem {
+func NewFuncMenuItem(name string, function func()) MenuItem {
 	return FuncMenuItem{name, function}
 }
 
-func NewIntMenuItem(name string, defaultVal int) IntMenuItem {
+func NewIntMenuItem(name string, defaultVal int) MenuItem {
 	return IntMenuItem{name, defaultVal}
 }

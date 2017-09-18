@@ -41,7 +41,7 @@ const (
 func initMenu() choice {
 	m := defaultMenu()
 	printMenu(m)
-	selectMenuItem(m.Items[0])
+	selectMenuItem(m[0])
 
 loop:
 	for {
@@ -70,14 +70,12 @@ func printMenu(m menu.Menu) {
 	menuY = (y / 2) + 1
 
 	offset := 0
-	for _, item := range m.Items {
+	for _, item := range m {
 		currX := menuStart + offset
-		iR := printMenuItem(item, currX, menuY)
-		itemRanges[&item] = iR
+		iR := printMenuItem(*item, currX, menuY)
+		itemRanges[item] = iR
 		print("|", iR.end+1, menuY)
-		offset += itemRanges[&item].size() + 2
-		fmt.Println("Range of menuitem", &item, ":", itemRanges[&item])
-		fmt.Println("Offset of menuitem:", offset)
+		offset += itemRanges[item].size() + 3
 	}
 	erase(menuStart+offset-2, menuY)
 }
@@ -100,18 +98,21 @@ func printMenuItem(item menu.MenuItem, x, y int) itemRange {
 	return printMenuItemHelper(item, x, y, tb.ColorDefault, tb.ColorDefault)
 }
 
-func selectMenuItem(item menu.MenuItem) {
+func selectMenuItem(item *menu.MenuItem) {
 	if selectedMenuItem != nil {
 		deselectMenuItem(*selectedMenuItem)
+		fmt.Println("Deselecting menuItem", (*selectedMenuItem).Name())
 	}
 
-	iR, ok := itemRanges[&item]
+	iR, ok := itemRanges[item]
 	if !ok {
+		fmt.Println("Exiting")
 		return
 	}
 
-	printMenuItemHelper(item, iR.start, menuY, tb.ColorDefault, tb.ColorDefault|tb.AttrReverse)
-	selectedMenuItem = &item
+	fmt.Println("Selecting menuItem", (*item).Name(), "whose range is", itemRanges[item])
+	printMenuItemHelper(*item, iR.start, menuY, tb.ColorDefault|tb.AttrReverse, tb.ColorDefault|tb.AttrReverse)
+	selectedMenuItem = item
 }
 
 func printMenuItemHelper(item menu.MenuItem, x, y int, fg, bg tb.Attribute) itemRange {
@@ -168,8 +169,8 @@ func initHanoi() {
 }
 
 func menuSize(menu menu.Menu) (ret int) {
-	for _, item := range menu.Items {
-		name := item.Name()
+	for _, item := range menu {
+		name := (*item).Name()
 		ret += utf8.RuneCountInString(name)
 		ret += 1
 	}
@@ -180,5 +181,5 @@ func menuSize(menu menu.Menu) (ret int) {
 func defaultMenu() menu.Menu {
 	run := menu.NewFuncMenuItem("Run", initHanoi)
 	size := menu.NewIntMenuItem("Size", 3)
-	return menu.Menu{[]menu.MenuItem{run, size}}
+	return []*menu.MenuItem{&run, &size}
 }
