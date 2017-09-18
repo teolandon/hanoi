@@ -1,7 +1,5 @@
-About to assign {81, 84} to item 0xc42000a400
-Range of menuitem 0xc42000a3f0 : {0, 0}
-Offset of menuitem: 2
-Size of menuitem Size: 4 + 1 + 1
-Range of menuitem 0xc42000a3f0 : {0, 0}
-Offset of menuitem: 4
+Range of menuitem 0xc42000a3f0 : {81, 84}
+Offset of menuitem: 6
+Range of menuitem 0xc42000a3f0 : {87, 93}
+Offset of menuitem: 15
 {32 8 2}

@@ -72,14 +72,22 @@ func printMenu(m menu.Menu) {
 	offset := 0
 	for _, item := range m.Items {
 		currX := menuStart + offset
-		printMenuItem(item, currX, menuY)
-		offset += itemRanges[&item].size() + 1
+		iR := printMenuItem(item, currX, menuY)
+		itemRanges[&item] = iR
+		print("|", iR.end+1, menuY)
+		offset += itemRanges[&item].size() + 2
 		fmt.Println("Range of menuitem", &item, ":", itemRanges[&item])
 		fmt.Println("Offset of menuitem:", offset)
 	}
+	erase(menuStart+offset-2, menuY)
 }
 
-func reprintMenuItem(item menu.MenuItem) {
+func erase(x, y int) {
+	tb.SetCell(x, y, ' ', tb.ColorDefault, tb.ColorDefault)
+	tb.Sync()
+}
+
+func deselectMenuItem(item menu.MenuItem) {
 	iR, ok := itemRanges[&item]
 	if !ok {
 		return
@@ -88,13 +96,13 @@ func reprintMenuItem(item menu.MenuItem) {
 	printMenuItem(item, iR.start, menuY)
 }
 
-func printMenuItem(item menu.MenuItem, x, y int) {
-	printMenuItemHelper(item, x, y, tb.ColorDefault, tb.ColorDefault)
+func printMenuItem(item menu.MenuItem, x, y int) itemRange {
+	return printMenuItemHelper(item, x, y, tb.ColorDefault, tb.ColorDefault)
 }
 
 func selectMenuItem(item menu.MenuItem) {
 	if selectedMenuItem != nil {
-		reprintMenuItem(*selectedMenuItem)
+		deselectMenuItem(*selectedMenuItem)
 	}
 
 	iR, ok := itemRanges[&item]
@@ -106,21 +114,22 @@ func selectMenuItem(item menu.MenuItem) {
 	selectedMenuItem = &item
 }
 
-func printMenuItemHelper(item menu.MenuItem, x, y int, fg, bg tb.Attribute) {
+func printMenuItemHelper(item menu.MenuItem, x, y int, fg, bg tb.Attribute) itemRange {
 	name := item.Name()
 	nameSize := utf8.RuneCountInString(name)
 	switch v := item.(type) {
 	case menu.FuncMenuItem:
 		printHelper(name, x, y, fg, bg)
-		iR := itemRange{x, x + nameSize}
-		fmt.Println("About to assign", iR, "to item", &item)
-		itemRanges[&item] = itemRange{x, x + nameSize}
+		return itemRange{x, x + nameSize}
 	case menu.IntMenuItem:
 		valueStr := strconv.Itoa(v.Value())
 		printHelper(name+" "+valueStr, x, y, fg, bg)
 		currItemSize := nameSize + utf8.RuneCountInString(valueStr) + 1
-		fmt.Println("Size of menuitem "+name+":", nameSize, "+", utf8.RuneCountInString(valueStr), "+", 1)
-		itemRanges[&item] = itemRange{x, x + currItemSize}
+		printHelper("▲", x+currItemSize-1, y-1, fg, bg)
+		printHelper("▼", x+currItemSize-1, y+1, fg, bg)
+		return itemRange{x, x + currItemSize}
+	default:
+		return itemRange{-1, -1}
 	}
 }
 
