@@ -8,11 +8,12 @@ import "unicode/utf8"
 import "time"
 
 var (
-	initialized      bool                         = false
-	itemRanges       map[*menu.MenuItem]itemRange = make(map[*menu.MenuItem]itemRange)
+	initialized      bool                        = false
+	itemRanges       map[menu.MenuItem]itemRange = make(map[menu.MenuItem]itemRange)
 	mainMenu         menu.Menu
-	menuY            int = -1
-	selectedMenuItem int = -1
+	menuFlag         bool = false
+	menuY            int  = -1
+	selectedMenuItem int  = -1
 )
 
 var (
@@ -43,9 +44,11 @@ func initMenu() choice {
 	mainMenu = defaultMenu()
 	printMenu()
 	selectMenuItem(0)
+	menuFlag = true
 
 loop:
-	for {
+
+	for menuFlag {
 		switch ev := tb.PollEvent(); ev.Type {
 		case tb.EventKey:
 			if ev.Key == tb.KeyEsc || ev.Ch == 'q' {
@@ -54,14 +57,29 @@ loop:
 				navigateMenuLeft()
 			} else if ev.Key == tb.KeyArrowRight {
 				navigateMenuRight()
+			} else if ev.Key == tb.KeyEnter {
+				fmt.Println("lololo")
+				switch v := mainMenu[selectedMenuItem].(type) {
+				case menu.FuncMenuItem:
+					v.Function()()
+				case menu.IntMenuItem:
+					editIntMenuItem(v)
+				}
+			} else {
+				fmt.Println("Uncovered event:", ev)
 			}
 
 		default:
+			fmt.Println("Uncovered event:", ev)
 			time.Sleep(10 * time.Millisecond)
 		}
 	}
 
 	return exit
+}
+
+func editIntMenuItem(item menu.IntMenuItem) {
+	// STUB
 }
 
 func printMenu() {
@@ -78,10 +96,10 @@ func printMenu() {
 	offset := 0
 	for _, item := range mainMenu {
 		currX := menuStart + offset
-		iR := printMenuItem(*item, currX, menuY)
+		iR := printMenuItem(item, currX, menuY)
 		itemRanges[item] = iR
 		print("|", iR.end+2, menuY)
-		fmt.Println("Size of", (*item).Name(), ":", itemRanges[item].size())
+		fmt.Println("Size of", item.Name(), ":", itemRanges[item].size())
 		offset += itemRanges[item].size() + 3
 	}
 	erase(menuStart+offset-2, menuY)
@@ -99,7 +117,7 @@ func deselectMenuItem(index int) {
 		return
 	}
 
-	printMenuItem(*item, iR.start, menuY)
+	printMenuItem(item, iR.start, menuY)
 }
 
 func printMenuItem(item menu.MenuItem, x, y int) itemRange {
@@ -118,8 +136,8 @@ func selectMenuItem(index int) {
 		return
 	}
 
-	fmt.Println("Selecting menuItem", (*item).Name(), "whose range is", itemRanges[item])
-	printMenuItemHelper(*item, iR.start, menuY, tb.ColorDefault|tb.AttrReverse, tb.ColorDefault|tb.AttrReverse)
+	fmt.Println("Selecting menuItem", item.Name(), "whose range is", itemRanges[item])
+	printMenuItemHelper(item, iR.start, menuY, tb.ColorDefault|tb.AttrReverse, tb.ColorDefault|tb.AttrReverse)
 	selectedMenuItem = index
 }
 
@@ -186,13 +204,14 @@ func initChoiceLoop(ch choice) {
 }
 
 func initHanoi() {
+	menuFlag = false
 	tb.Flush()
 	// x, y := tb.Size()
 }
 
 func menuSize(menu menu.Menu) (ret int) {
 	for _, item := range menu {
-		name := (*item).Name()
+		name := item.Name()
 		ret += utf8.RuneCountInString(name)
 		ret += 1
 	}
@@ -200,8 +219,13 @@ func menuSize(menu menu.Menu) (ret int) {
 	return
 }
 
+func exitMenu() {
+	menuFlag = false
+}
+
 func defaultMenu() menu.Menu {
 	run := menu.NewFuncMenuItem("Run", initHanoi)
 	size := menu.NewIntMenuItem("Size", 3)
-	return []*menu.MenuItem{&run, &size}
+	exit := menu.NewFuncMenuItem("Exit", exitMenu)
+	return []menu.MenuItem{run, size, exit}
 }

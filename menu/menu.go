@@ -1,6 +1,8 @@
 package menu
 
-type Menu []*MenuItem
+type Menu []MenuItem
+
+var funcMap map[FuncMenuItem]func() = make(map[FuncMenuItem]func())
 
 func (m Menu) Size() int {
 	return len(m)
@@ -11,8 +13,7 @@ type MenuItem interface {
 }
 
 type FuncMenuItem struct {
-	name     string
-	function func()
+	name string
 }
 
 type IntMenuItem struct {
@@ -25,7 +26,11 @@ func (m FuncMenuItem) Name() string {
 }
 
 func (m FuncMenuItem) Function() func() {
-	return m.function
+	ret, ok := funcMap[m]
+	if !ok {
+		return func() {}
+	}
+	return ret
 }
 
 func (m IntMenuItem) Name() string {
@@ -41,7 +46,9 @@ func (m IntMenuItem) SetValue(newVal int) {
 }
 
 func NewFuncMenuItem(name string, function func()) MenuItem {
-	return FuncMenuItem{name, function}
+	ret := FuncMenuItem{name}
+	funcMap[ret] = function
+	return FuncMenuItem{name}
 }
 
 func NewIntMenuItem(name string, defaultVal int) MenuItem {
