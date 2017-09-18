@@ -10,8 +10,9 @@ import "time"
 var (
 	initialized      bool                         = false
 	itemRanges       map[*menu.MenuItem]itemRange = make(map[*menu.MenuItem]itemRange)
-	menuY            int                          = -1
-	selectedMenuItem *menu.MenuItem               = nil
+	mainMenu         menu.Menu
+	menuY            int = -1
+	selectedMenuItem int = -1
 )
 
 var (
@@ -39,9 +40,9 @@ const (
 )
 
 func initMenu() choice {
-	m := defaultMenu()
-	printMenu(m)
-	selectMenuItem(m[0])
+	mainMenu = defaultMenu()
+	printMenu()
+	selectMenuItem(0)
 
 loop:
 	for {
@@ -49,7 +50,12 @@ loop:
 		case tb.EventKey:
 			if ev.Key == tb.KeyEsc || ev.Ch == 'q' {
 				break loop
+			} else if ev.Key == tb.KeyArrowLeft {
+				navigateMenuLeft()
+			} else if ev.Key == tb.KeyArrowRight {
+				navigateMenuRight()
 			}
+
 		default:
 			time.Sleep(10 * time.Millisecond)
 		}
@@ -58,9 +64,9 @@ loop:
 	return exit
 }
 
-func printMenu(m menu.Menu) {
+func printMenu() {
 	x, y := tb.Size()
-	menuSize := menuSize(m)
+	menuSize := menuSize(mainMenu)
 
 	if menuSize > x || y < 3 {
 		panic("terminal too small")
@@ -70,11 +76,12 @@ func printMenu(m menu.Menu) {
 	menuY = (y / 2) + 1
 
 	offset := 0
-	for _, item := range m {
+	for _, item := range mainMenu {
 		currX := menuStart + offset
 		iR := printMenuItem(*item, currX, menuY)
 		itemRanges[item] = iR
-		print("|", iR.end+1, menuY)
+		print("|", iR.end+2, menuY)
+		fmt.Println("Size of", (*item).Name(), ":", itemRanges[item].size())
 		offset += itemRanges[item].size() + 3
 	}
 	erase(menuStart+offset-2, menuY)
@@ -85,23 +92,24 @@ func erase(x, y int) {
 	tb.Sync()
 }
 
-func deselectMenuItem(item menu.MenuItem) {
-	iR, ok := itemRanges[&item]
+func deselectMenuItem(index int) {
+	item := mainMenu[index]
+	iR, ok := itemRanges[item]
 	if !ok {
 		return
 	}
 
-	printMenuItem(item, iR.start, menuY)
+	printMenuItem(*item, iR.start, menuY)
 }
 
 func printMenuItem(item menu.MenuItem, x, y int) itemRange {
 	return printMenuItemHelper(item, x, y, tb.ColorDefault, tb.ColorDefault)
 }
 
-func selectMenuItem(item *menu.MenuItem) {
-	if selectedMenuItem != nil {
-		deselectMenuItem(*selectedMenuItem)
-		fmt.Println("Deselecting menuItem", (*selectedMenuItem).Name())
+func selectMenuItem(index int) {
+	item := mainMenu[index]
+	if selectedMenuItem != -1 {
+		deselectMenuItem(selectedMenuItem)
 	}
 
 	iR, ok := itemRanges[item]
@@ -112,7 +120,7 @@ func selectMenuItem(item *menu.MenuItem) {
 
 	fmt.Println("Selecting menuItem", (*item).Name(), "whose range is", itemRanges[item])
 	printMenuItemHelper(*item, iR.start, menuY, tb.ColorDefault|tb.AttrReverse, tb.ColorDefault|tb.AttrReverse)
-	selectedMenuItem = item
+	selectedMenuItem = index
 }
 
 func printMenuItemHelper(item menu.MenuItem, x, y int, fg, bg tb.Attribute) itemRange {
@@ -121,14 +129,14 @@ func printMenuItemHelper(item menu.MenuItem, x, y int, fg, bg tb.Attribute) item
 	switch v := item.(type) {
 	case menu.FuncMenuItem:
 		printHelper(name, x, y, fg, bg)
-		return itemRange{x, x + nameSize}
+		return itemRange{x, x + nameSize - 1}
 	case menu.IntMenuItem:
 		valueStr := strconv.Itoa(v.Value())
 		printHelper(name+" "+valueStr, x, y, fg, bg)
 		currItemSize := nameSize + utf8.RuneCountInString(valueStr) + 1
-		printHelper("▲", x+currItemSize-1, y-1, fg, bg)
-		printHelper("▼", x+currItemSize-1, y+1, fg, bg)
-		return itemRange{x, x + currItemSize}
+		printHelper("▲", x+currItemSize-1, y-1, tb.ColorDefault, tb.ColorDefault)
+		printHelper("▼", x+currItemSize-1, y+1, tb.ColorDefault, tb.ColorDefault)
+		return itemRange{x, x + currItemSize - 1}
 	default:
 		return itemRange{-1, -1}
 	}
@@ -143,6 +151,20 @@ func printHelper(s string, x, y int, fg, bg tb.Attribute) {
 		tb.SetCell(x+i, y, r, fg, bg)
 	}
 	tb.Sync()
+}
+
+func navigateMenuLeft() {
+	menuSize := mainMenu.Size()
+	newIndex := (selectedMenuItem - 1) % menuSize
+	if newIndex < 0 {
+		newIndex += menuSize
+	}
+	selectMenuItem(newIndex)
+}
+
+func navigateMenuRight() {
+	newIndex := (selectedMenuItem + 1) % mainMenu.Size()
+	selectMenuItem(newIndex)
 }
 
 func Init() {

@@ -2,6 +2,10 @@ package menu
 
 type Menu []*MenuItem
 
+func (m Menu) Size() int {
+	return len(m)
+}
+
 type MenuItem interface {
 	Name() string
 }
