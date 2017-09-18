@@ -26,7 +26,7 @@ type itemRange struct {
 }
 
 func (iR itemRange) size() int {
-	return iR.end - iR.start + 1
+	return iR.end - iR.start
 }
 
 func (iR itemRange) String() string {
@@ -63,7 +63,7 @@ loop:
 				case menu.FuncMenuItem:
 					v.Function()()
 				case menu.IntMenuItem:
-					editIntMenuItem(v)
+					editIntMenuItem()
 				}
 			} else {
 				fmt.Println("Uncovered event:", ev)
@@ -78,13 +78,78 @@ loop:
 	return exit
 }
 
-func editIntMenuItem(item menu.IntMenuItem) {
-	// STUB
+func editIntMenuItem() {
+	if selectedMenuItem < 0 {
+		return
+	}
+	curr := mainMenu[selectedMenuItem]
+	item, ok := curr.(menu.IntMenuItem)
+	if !ok {
+		return
+	}
+
+	temp := selectedMenuItem
+	defer func() { selectedMenuItem = temp }()
+	deselectCurrentMenuItem()
+
+	iR, ok := itemRanges[item]
+	if !ok {
+		return
+	}
+
+	printHelper("▲", iR.end, menuY-1, tb.ColorDefault|tb.AttrReverse, tb.ColorDefault|tb.AttrReverse)
+	printHelper(strconv.Itoa(item.Value()), iR.end, menuY,
+		tb.ColorDefault|tb.AttrReverse, tb.ColorDefault|tb.AttrReverse)
+	printHelper("▼", iR.end, menuY+1, tb.ColorDefault|tb.AttrReverse, tb.ColorDefault|tb.AttrReverse)
+
+intEditLoop:
+	for {
+		switch ev := tb.PollEvent(); ev.Type {
+		case tb.EventKey:
+			if ev.Key == tb.KeyEsc || ev.Key == tb.KeyEnter || ev.Ch == 'q' {
+				break intEditLoop
+			} else if ev.Key == tb.KeyArrowUp {
+				incIntMenuItem(temp)
+			} else if ev.Key == tb.KeyArrowDown {
+				decIntMenuItem(temp)
+			} else {
+				fmt.Println("Uncovered event:", ev)
+			}
+
+		default:
+			fmt.Println("Uncovered event:", ev)
+			time.Sleep(10 * time.Millisecond)
+		}
+	}
+}
+
+func incIntMenuItem(index int) {
+	v := mainMenu[index]
+	item, ok := v.(menu.IntMenuItem)
+	if !ok {
+		return
+	}
+
+	item.SetValue(item.Value() + 1)
+	// reprintMenuItem()
+}
+
+func decIntMenuItem(index int) {
+
 }
 
 func printMenu() {
+	printMenuRange(0, mainMenu.Size())
+	printItems(0, mainMenu.Size())
+}
+
+func printMenuRange(start, end int) {
+	populateRanges(start, end)
+}
+
+func populateRanges(start, end int) {
 	x, y := tb.Size()
-	menuSize := menuSize(mainMenu)
+	menuSize := menuCharSize(mainMenu)
 
 	if menuSize > x || y < 3 {
 		panic("terminal too small")
@@ -92,17 +157,30 @@ func printMenu() {
 
 	menuStart := (x - menuSize) / 2
 	menuY = (y / 2) + 1
-
 	offset := 0
-	for _, item := range mainMenu {
+	for _, item := range mainMenu[start:end] {
 		currX := menuStart + offset
-		iR := printMenuItem(item, currX, menuY)
-		itemRanges[item] = iR
-		print("|", iR.end+2, menuY)
-		fmt.Println("Size of", item.Name(), ":", itemRanges[item].size())
+		nameSize := utf8.RuneCountInString(item.Name())
+
+		switch v := item.(type) {
+		case menu.FuncMenuItem:
+			itemRanges[item] = itemRange{currX, currX + nameSize}
+		case menu.IntMenuItem:
+			valueStr := strconv.Itoa(v.Value())
+			currItemSize := nameSize + utf8.RuneCountInString(valueStr) + 1
+			itemRanges[item] = itemRange{currX, currX + currItemSize}
+		}
+
 		offset += itemRanges[item].size() + 3
 	}
-	erase(menuStart+offset-2, menuY)
+}
+
+func printItems(start, end int) {
+	for _, item := range mainMenu {
+		printMenuItem(item)
+		print("|", itemRanges[item].end+1, menuY)
+	}
+	erase(itemRanges[mainMenu[mainMenu.Size()-1]].end+1, menuY)
 }
 
 func erase(x, y int) {
@@ -110,53 +188,44 @@ func erase(x, y int) {
 	tb.Sync()
 }
 
-func deselectMenuItem(index int) {
-	item := mainMenu[index]
-	iR, ok := itemRanges[item]
-	if !ok {
+func deselectCurrentMenuItem() {
+	if selectedMenuItem == -1 {
 		return
 	}
 
-	printMenuItem(item, iR.start, menuY)
+	item := mainMenu[selectedMenuItem]
+
+	printMenuItem(item)
+	selectedMenuItem = -1
 }
 
-func printMenuItem(item menu.MenuItem, x, y int) itemRange {
-	return printMenuItemHelper(item, x, y, tb.ColorDefault, tb.ColorDefault)
+func printMenuItem(item menu.MenuItem) {
+	printMenuItemHelper(item, tb.ColorDefault, tb.ColorDefault)
 }
 
 func selectMenuItem(index int) {
+	deselectCurrentMenuItem()
 	item := mainMenu[index]
-	if selectedMenuItem != -1 {
-		deselectMenuItem(selectedMenuItem)
-	}
 
-	iR, ok := itemRanges[item]
-	if !ok {
-		fmt.Println("Exiting")
-		return
-	}
-
-	fmt.Println("Selecting menuItem", item.Name(), "whose range is", itemRanges[item])
-	printMenuItemHelper(item, iR.start, menuY, tb.ColorDefault|tb.AttrReverse, tb.ColorDefault|tb.AttrReverse)
+	printMenuItemHelper(item, tb.ColorDefault|tb.AttrReverse, tb.ColorDefault|tb.AttrReverse)
 	selectedMenuItem = index
 }
 
-func printMenuItemHelper(item menu.MenuItem, x, y int, fg, bg tb.Attribute) itemRange {
+func printMenuItemHelper(item menu.MenuItem, fg, bg tb.Attribute) {
 	name := item.Name()
 	nameSize := utf8.RuneCountInString(name)
+
+	x := itemRanges[item].start
+
 	switch v := item.(type) {
 	case menu.FuncMenuItem:
-		printHelper(name, x, y, fg, bg)
-		return itemRange{x, x + nameSize - 1}
+		printHelper(name, x, menuY, fg, bg)
 	case menu.IntMenuItem:
 		valueStr := strconv.Itoa(v.Value())
-		printHelper(name+" "+valueStr, x, y, fg, bg)
+		printHelper(name+" "+valueStr, x, menuY, fg, bg)
 		currItemSize := nameSize + utf8.RuneCountInString(valueStr) + 1
-		printHelper("▲", x+currItemSize-1, y-1, tb.ColorDefault, tb.ColorDefault)
-		printHelper("▼", x+currItemSize-1, y+1, tb.ColorDefault, tb.ColorDefault)
-		return itemRange{x, x + currItemSize - 1}
-	default:
-		return itemRange{-1, -1}
+		printHelper("▲", x+currItemSize-1, menuY-1, tb.ColorDefault, tb.ColorDefault)
+		printHelper("▼", x+currItemSize-1, menuY+1, tb.ColorDefault, tb.ColorDefault)
 	}
 }
 
@@ -209,11 +278,17 @@ func initHanoi() {
 	// x, y := tb.Size()
 }
 
-func menuSize(menu menu.Menu) (ret int) {
-	for _, item := range menu {
+func menuCharSize(m menu.Menu) (ret int) {
+	for _, item := range m {
 		name := item.Name()
-		ret += utf8.RuneCountInString(name)
-		ret += 1
+		nameSize := utf8.RuneCountInString(name)
+		switch v := item.(type) {
+		case menu.FuncMenuItem:
+			ret += nameSize + 3
+		case menu.IntMenuItem:
+			valSize := utf8.RuneCountInString(strconv.Itoa(v.Value()))
+			ret += nameSize + valSize + 4
+		}
 	}
 	ret -= 1
 	return
