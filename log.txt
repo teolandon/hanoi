@@ -1,2 +1,0 @@
-Selecting menuItem Run whose range is {81, 84}
-{32 8 2}
