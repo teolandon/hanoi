@@ -1,7 +1,7 @@
 package main
 
 import "github.com/nsf/termbox-go"
-import "github.com/teolandon/hanoi/view"
+import "github.com/teolandon/hanoi/menu"
 import "fmt"
 
 func testMe() (ret []termbox.Cell) {
@@ -17,7 +17,9 @@ func testMe() (ret []termbox.Cell) {
 	termbox.SetOutputMode(termbox.OutputNormal)
 	termbox.Clear(termbox.ColorWhite, termbox.ColorRed)
 
-	view.Init()
+	m := menu.DefaultMenu()
+
+	menu.Init(&m)
 
 	return
 }

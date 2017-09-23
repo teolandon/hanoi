@@ -33,14 +33,11 @@ func (iR itemRange) String() string {
 }
 
 func initMenu() {
-	mainMenu = defaultMenu()
-	printMenu()
-	selectMenuItem(0)
 	menuFlag = true
 
 loop:
-
 	for menuFlag {
+		printMenu()
 		switch ev := tb.PollEvent(); ev.Type {
 		case tb.EventKey:
 			if ev.Key == tb.KeyEsc || ev.Ch == 'q' {
@@ -59,7 +56,6 @@ loop:
 			} else {
 				fmt.Println("Uncovered event:", ev)
 			}
-
 		default:
 			fmt.Println("Uncovered event:", ev)
 			time.Sleep(10 * time.Millisecond)
@@ -78,10 +74,10 @@ func editIntMenuItem() {
 	}
 
 	temp := selectedMenuItem
+	deselectCurrentMenuItem()
 	defer func() {
 		selectMenuItem(temp)
 	}()
-	deselectCurrentMenuItem()
 
 	iR, ok := itemRanges[item]
 	if !ok {
@@ -144,6 +140,7 @@ func decIntMenuItem(index int) {
 func printMenu() {
 	printMenuRange(0, mainMenu.Size())
 	printItems(0, mainMenu.Size())
+	selectMenuItem(selectedMenuItem)
 }
 
 func printMenuRange(start, end int) {
@@ -300,18 +297,14 @@ func navigateMenuRight() {
 	selectMenuItem(newIndex)
 }
 
-func Init() {
-	if !initialized {
+func Init(menu *Menu) {
+	if !initialized && menu.Size() > 0 {
 		initialized = true
+		mainMenu = *menu
+		selectedMenuItem = 0
 		tb.Flush()
 		initMenu()
 	}
-}
-
-func initHanoi() {
-	menuFlag = false
-	tb.Flush()
-	// x, y := tb.Size()
 }
 
 func intCharSize(i int) int {
@@ -338,8 +331,8 @@ func exitMenu() {
 	menuFlag = false
 }
 
-func defaultMenu() Menu {
-	run := NewFuncMenuItem("Run", initHanoi)
+func DefaultMenu() Menu {
+	run := NewFuncMenuItem("Run", func() {})
 	size := NewIntMenuItem("Size", 3)
 	exit := NewFuncMenuItem("Exit", exitMenu)
 	return []MenuItem{run, size, exit}
