@@ -1,16 +1,15 @@
-package view
+package menu
 
 import "fmt"
 import tb "github.com/nsf/termbox-go"
-import "github.com/teolandon/hanoi/menu"
 import "strconv"
 import "unicode/utf8"
 import "time"
 
 var (
-	initialized      bool                        = false
-	itemRanges       map[menu.MenuItem]itemRange = make(map[menu.MenuItem]itemRange)
-	mainMenu         menu.Menu
+	initialized      bool                   = false
+	itemRanges       map[MenuItem]itemRange = make(map[MenuItem]itemRange)
+	mainMenu         Menu
 	menuFlag         bool = false
 	menuY            int  = -1
 	selectedMenuItem int  = -1
@@ -33,14 +32,7 @@ func (iR itemRange) String() string {
 	return "{" + strconv.Itoa(iR.start) + ", " + strconv.Itoa(iR.end) + "}"
 }
 
-type choice uint16
-
-const (
-	exit choice = iota
-	cont
-)
-
-func initMenu() choice {
+func initMenu() {
 	mainMenu = defaultMenu()
 	printMenu()
 	selectMenuItem(0)
@@ -59,9 +51,9 @@ loop:
 				navigateMenuRight()
 			} else if ev.Key == tb.KeyEnter {
 				switch v := mainMenu[selectedMenuItem].(type) {
-				case menu.FuncMenuItem:
+				case FuncMenuItem:
 					v.Function()()
-				case menu.IntMenuItem:
+				case IntMenuItem:
 					editIntMenuItem()
 				}
 			} else {
@@ -73,8 +65,6 @@ loop:
 			time.Sleep(10 * time.Millisecond)
 		}
 	}
-
-	return exit
 }
 
 func editIntMenuItem() {
@@ -82,7 +72,7 @@ func editIntMenuItem() {
 		return
 	}
 	curr := mainMenu[selectedMenuItem]
-	item, ok := curr.(menu.IntMenuItem)
+	item, ok := curr.(IntMenuItem)
 	if !ok {
 		return
 	}
@@ -130,8 +120,8 @@ intEditLoop:
 	}
 }
 
-func incIntMenuItem(item menu.MenuItem) {
-	intItem, ok := item.(menu.IntMenuItem)
+func incIntMenuItem(item MenuItem) {
+	intItem, ok := item.(IntMenuItem)
 	if !ok {
 		return
 	}
@@ -177,9 +167,9 @@ func populateRanges(start, end int) {
 
 		tb.Sync()
 		switch v := item.(type) {
-		case menu.FuncMenuItem:
+		case FuncMenuItem:
 			itemRanges[item] = itemRange{currX, currX + nameSize}
-		case menu.IntMenuItem:
+		case IntMenuItem:
 			currItemSize := nameSize + intCharSize(v.Value()) + 1
 			itemRanges[item] = itemRange{currX, currX + currItemSize}
 		}
@@ -212,7 +202,7 @@ func deselectCurrentMenuItem() {
 	selectedMenuItem = -1
 }
 
-func printMenuItem(item menu.MenuItem) {
+func printMenuItem(item MenuItem) {
 	printMenuItemHelper(item, tb.ColorDefault, tb.ColorDefault)
 }
 
@@ -224,16 +214,16 @@ func selectMenuItem(index int) {
 	selectedMenuItem = index
 }
 
-func printMenuItemHelper(item menu.MenuItem, fg, bg tb.Attribute) {
+func printMenuItemHelper(item MenuItem, fg, bg tb.Attribute) {
 	name := item.Name()
 	nameSize := utf8.RuneCountInString(name)
 
 	x := itemRanges[item].start
 
 	switch v := item.(type) {
-	case menu.FuncMenuItem:
+	case FuncMenuItem:
 		printHelper(name, x, menuY, fg, bg)
-	case menu.IntMenuItem:
+	case IntMenuItem:
 		valueStr := strconv.Itoa(v.Value())
 		printHelper(name+" "+valueStr, x, menuY, fg, bg)
 		currItemSize := nameSize + utf8.RuneCountInString(valueStr) + 1
@@ -248,7 +238,7 @@ func highlightMenuRange(start, end int) {
 	}
 }
 
-func highlightItem(item menu.MenuItem) {
+func highlightItem(item MenuItem) {
 	iR, ok := itemRanges[item]
 	if !ok {
 		return
@@ -314,17 +304,7 @@ func Init() {
 	if !initialized {
 		initialized = true
 		tb.Flush()
-		ch := initMenu()
-		initChoiceLoop(ch)
-	}
-}
-
-func initChoiceLoop(ch choice) {
-	switch ch {
-	case exit:
-		return
-	case cont:
-		initHanoi()
+		initMenu()
 	}
 }
 
@@ -338,14 +318,14 @@ func intCharSize(i int) int {
 	return utf8.RuneCountInString(strconv.Itoa(i))
 }
 
-func menuCharSize(m menu.Menu) (ret int) {
+func menuCharSize(m Menu) (ret int) {
 	for _, item := range m {
 		name := item.Name()
 		nameSize := utf8.RuneCountInString(name)
 		switch v := item.(type) {
-		case menu.FuncMenuItem:
+		case FuncMenuItem:
 			ret += nameSize + 3
-		case menu.IntMenuItem:
+		case IntMenuItem:
 			valSize := intCharSize(v.Value())
 			ret += nameSize + valSize + 4
 		}
@@ -358,9 +338,9 @@ func exitMenu() {
 	menuFlag = false
 }
 
-func defaultMenu() menu.Menu {
-	run := menu.NewFuncMenuItem("Run", initHanoi)
-	size := menu.NewIntMenuItem("Size", 3)
-	exit := menu.NewFuncMenuItem("Exit", exitMenu)
-	return []menu.MenuItem{run, size, exit}
+func defaultMenu() Menu {
+	run := NewFuncMenuItem("Run", initHanoi)
+	size := NewIntMenuItem("Size", 3)
+	exit := NewFuncMenuItem("Exit", exitMenu)
+	return []MenuItem{run, size, exit}
 }
