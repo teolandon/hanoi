@@ -1,56 +1,52 @@
 package menu
 
-type Menu []MenuItem
+type Menu []*MenuItem
 
-var funcMap map[FuncMenuItem]func() = make(map[FuncMenuItem]func())
+type MenuItemType uint8
+
+const (
+	FuncMenuItem MenuItemType = iota
+	IntMenuItem
+)
 
 func (m Menu) Size() int {
 	return len(m)
 }
 
-type MenuItem interface {
-	Name() string
+type MenuItem struct {
+	Name     string
+	Type     MenuItemType
+	function func()
+	value    int
 }
 
-type FuncMenuItem struct {
-	name string
-}
-
-type IntMenuItem struct {
-	name  string
-	value int
-}
-
-func (m FuncMenuItem) Name() string {
-	return m.name
-}
-
-func (m FuncMenuItem) Function() func() {
-	ret, ok := funcMap[m]
-	if !ok {
-		return func() {}
+func (m MenuItem) Function() func() {
+	if m.Type != FuncMenuItem {
+		panic("type error")
 	}
-	return ret
+	return m.function
 }
 
-func (m IntMenuItem) Name() string {
-	return m.name
-}
-
-func (m IntMenuItem) Value() int {
+func (m MenuItem) Value() int {
+	if m.Type != IntMenuItem {
+		panic("type error")
+	}
 	return m.value
 }
 
-func (m IntMenuItem) SetValue(newVal int) {
-	m.value = newVal
+func (m *MenuItem) SetValue(newVal int) {
+	item := *m
+	if m.Type != IntMenuItem {
+		panic("type error")
+	}
+	item.value = newVal
+	*m = item
 }
 
 func NewFuncMenuItem(name string, function func()) MenuItem {
-	ret := FuncMenuItem{name}
-	funcMap[ret] = function
-	return FuncMenuItem{name}
+	return MenuItem{name, FuncMenuItem, function, 0}
 }
 
 func NewIntMenuItem(name string, defaultVal int) MenuItem {
-	return IntMenuItem{name, defaultVal}
+	return MenuItem{name, IntMenuItem, func() {}, defaultVal}
 }
