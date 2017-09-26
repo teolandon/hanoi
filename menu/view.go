@@ -15,8 +15,12 @@ var (
 	selectedMenuItem int  = -1
 )
 
-var (
-	selectedColor tb.Attribute = tb.ColorDefault | tb.AttrReverse
+const (
+	backgroundColor tb.Attribute = tb.ColorBlue
+	foregroundColor tb.Attribute = tb.ColorDefault
+	ambientColor    tb.Attribute = tb.ColorDefault
+	selectedFGColor tb.Attribute = foregroundColor | tb.AttrReverse
+	selectedBGColor tb.Attribute = backgroundColor | tb.AttrReverse
 )
 
 type itemRange struct {
@@ -85,10 +89,10 @@ func editIntMenuItem() {
 	valuePos := iR.end - valueLength
 	arrowPos := valuePos + (valueLength)/2
 
-	printHelper("▲", arrowPos, menuY-1, selectedColor, selectedColor)
+	printHelper("▲", arrowPos, menuY-1, selectedFGColor, selectedBGColor)
 	printHelper(strconv.Itoa(item.Value()), valuePos, menuY,
-		tb.ColorDefault|tb.AttrUnderline, tb.ColorDefault|tb.AttrUnderline)
-	printHelper("▼", arrowPos, menuY+1, selectedColor, selectedColor)
+		foregroundColor|tb.AttrUnderline, backgroundColor|tb.AttrUnderline)
+	printHelper("▼", arrowPos, menuY+1, selectedFGColor, selectedBGColor)
 	tb.Sync()
 
 intEditLoop:
@@ -205,7 +209,7 @@ func eraseRange(start, end, y int) {
 
 // Does NOT Sync terminal
 func eraseHelper(x, y int) {
-	tb.SetCell(x, y, ' ', tb.ColorDefault, tb.ColorDefault)
+	tb.SetCell(x, y, ' ', ambientColor, ambientColor)
 }
 
 func deselectCurrentMenuItem() {
@@ -220,12 +224,12 @@ func deselectCurrentMenuItem() {
 }
 
 func printMenuItem(item *MenuItem) {
-	printMenuItemHelper(item, tb.ColorDefault, tb.ColorDefault, tb.ColorDefault, tb.ColorDefault)
+	printMenuItemHelper(item, foregroundColor, backgroundColor, foregroundColor, backgroundColor)
 	tb.Sync()
 }
 
 func printEditingMenuItem(item *MenuItem) {
-	printMenuItemHelper(item, tb.ColorDefault, tb.ColorDefault, selectedColor, selectedColor)
+	printMenuItemHelper(item, foregroundColor, backgroundColor, selectedFGColor, selectedBGColor)
 	tb.Sync()
 }
 
@@ -284,23 +288,23 @@ func unHighlightRange(iR itemRange) {
 }
 
 func highlight(x, y int) {
-	highlightHelper(x, y, tb.ColorDefault|tb.AttrReverse)
+	highlightHelper(x, y, selectedFGColor, selectedBGColor)
 }
 
 func unHighlight(x, y int) {
-	highlightHelper(x, y, tb.ColorDefault)
+	highlightHelper(x, y, foregroundColor, backgroundColor)
 }
 
-func highlightHelper(x, y int, color tb.Attribute) {
+func highlightHelper(x, y int, fg, bg tb.Attribute) {
 	termX, _ := tb.Size()
 	cells := tb.CellBuffer()
 	char := cells[x+y*termX].Ch
-	tb.SetCell(x, y, char, color, color)
+	tb.SetCell(x, y, char, fg, bg)
 	tb.Sync()
 }
 
 func printStr(s string, x, y int) {
-	printHelper(s, x, y, tb.ColorDefault, tb.ColorDefault)
+	printHelper(s, x, y, foregroundColor, backgroundColor)
 }
 
 // Does NOT Sync Terminal
