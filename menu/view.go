@@ -91,14 +91,6 @@ func editIntMenuItem() {
 	printHelper("▼", arrowPos, menuY+1, selectedColor, selectedColor)
 	tb.Sync()
 
-	defer func() {
-		printHelper("▲", iR.end-1, menuY-1, tb.ColorDefault, tb.ColorDefault)
-		printHelper(strconv.Itoa(item.Value()), iR.end-1, menuY,
-			tb.ColorDefault, tb.ColorDefault)
-		printHelper("▼", iR.end-1, menuY+1, tb.ColorDefault, tb.ColorDefault)
-		tb.Sync()
-	}()
-
 intEditLoop:
 	for {
 		switch ev := tb.PollEvent(); ev.Type {
@@ -129,9 +121,8 @@ func incIntMenuItem(index int) {
 	if oldCharSize != newCharSize {
 		populateRangesFrom(index)
 		printItems(index, mainMenu.Size())
-	} else {
-		printMenuItem(item)
 	}
+	printEditingMenuItem(item)
 }
 
 func decIntMenuItem(index int) {
@@ -143,9 +134,8 @@ func decIntMenuItem(index int) {
 	if oldCharSize != newCharSize {
 		populateRangesFrom(index)
 		printItems(index, mainMenu.Size())
-	} else {
-		printMenuItem(item)
 	}
+	printEditingMenuItem(item)
 }
 
 func printMenu() {
@@ -230,7 +220,12 @@ func deselectCurrentMenuItem() {
 }
 
 func printMenuItem(item *MenuItem) {
-	printMenuItemHelper(item, tb.ColorDefault, tb.ColorDefault)
+	printMenuItemHelper(item, tb.ColorDefault, tb.ColorDefault, tb.ColorDefault, tb.ColorDefault)
+	tb.Sync()
+}
+
+func printEditingMenuItem(item *MenuItem) {
+	printMenuItemHelper(item, tb.ColorDefault, tb.ColorDefault, selectedColor, selectedColor)
 	tb.Sync()
 }
 
@@ -242,7 +237,7 @@ func selectMenuItem(index int) {
 	selectedMenuItem = index
 }
 
-func printMenuItemHelper(item *MenuItem, fg, bg tb.Attribute) {
+func printMenuItemHelper(item *MenuItem, fg, bg, arrowFG, arrowBG tb.Attribute) {
 	name := item.Name
 	nameSize := utf8.RuneCountInString(name)
 
@@ -256,8 +251,8 @@ func printMenuItemHelper(item *MenuItem, fg, bg tb.Attribute) {
 		printHelper(name+" "+valueStr, x, menuY, fg, bg)
 		valueLength := utf8.RuneCountInString(valueStr)
 		arrowPos := x + nameSize + 1 + (valueLength)/2
-		printHelper("▲", arrowPos, menuY-1, tb.ColorDefault, tb.ColorDefault)
-		printHelper("▼", arrowPos, menuY+1, tb.ColorDefault, tb.ColorDefault)
+		printHelper("▲", arrowPos, menuY-1, arrowFG, arrowBG)
+		printHelper("▼", arrowPos, menuY+1, arrowFG, arrowBG)
 	}
 }
 
