@@ -17,9 +17,7 @@ func testMe() (ret []termbox.Cell) {
 	termbox.SetOutputMode(termbox.OutputNormal)
 	termbox.Clear(termbox.ColorWhite, termbox.ColorRed)
 
-	m := menu.DefaultMenu()
-
-	menu.Init(&m)
+	menu.Init()
 
 	return
 }
