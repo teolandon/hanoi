@@ -7,8 +7,8 @@ import "unicode/utf8"
 import "time"
 
 var (
-	initialized      bool                 = false
-	itemRanges       map[string]itemRange = make(map[string]itemRange)
+	initialized      = false
+	itemRanges       = make(map[string]itemRange)
 	mainMenu         Menu
 	menuFlag         bool = false
 	menuY            int  = -1
