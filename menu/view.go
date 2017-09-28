@@ -48,7 +48,7 @@ func Init() {
 		tb.Flush()
 		tb.HideCursor()
 		fmt.Println("Setting cell")
-		text := containers.NewTextBox()
+		text := containers.SimpleTitledContainer()
 		for y, sl := range text.Grid() {
 			for x, pixel := range sl {
 				fmt.Println("Setting cell", x, y, "as", pixel.Ch)
@@ -56,10 +56,9 @@ func Init() {
 			}
 		}
 
-		tb.Sync()
-
 	loop:
 		for {
+			tb.Sync()
 			switch ev := tb.PollEvent(); ev.Type {
 			case tb.EventKey:
 				if ev.Key == tb.KeyEsc || ev.Ch == 'q' {

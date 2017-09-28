@@ -1,13 +1,15 @@
 package containers
 
+import "fmt"
 import tb "github.com/nsf/termbox-go"
 
 type Accent int8
 
 const (
-	normal  Accent = 0
-	accent1 Accent = 2
-	accent2 Accent = 4
+	normal      Accent = 0
+	highlighted Accent = 2
+	accent1     Accent = 4
+	accent2     Accent = 6
 )
 
 type Pixel struct {
@@ -18,6 +20,7 @@ type Pixel struct {
 type PixelGrid [][]Pixel
 
 func newPixelGrid(b Rect) PixelGrid {
+	fmt.Println(b.y2, b.y1)
 	retGrid := make([][]Pixel, b.y2-b.y1)
 	for i := range retGrid {
 		retGrid[i] = make([]Pixel, b.x2-b.x1)
@@ -55,11 +58,20 @@ func (r Rect) resizeAllBy(i int) (ret Rect) {
 	return
 }
 
-type palette [6]tb.Attribute
-
-func newPalette(fg, bg, accent1fg, accent1bg, accent2fg, accent2bg tb.Attribute) palette {
-	return [6]tb.Attribute{fg, bg, accent1fg, accent1bg, accent2fg, accent2bg}
+type Palette struct {
+	normalFG    tb.Attribute
+	normalBG    tb.Attribute
+	highlightFG tb.Attribute
+	highlightBG tb.Attribute
+	accent1FG   tb.Attribute
+	accent1BG   tb.Attribute
+	accent2FG   tb.Attribute
+	accent2BG   tb.Attribute
 }
+
+var (
+	defaultPalette = Palette{tb.ColorDefault, tb.ColorDefault, tb.ColorDefault, tb.ColorDefault, tb.ColorDefault, tb.ColorDefault, tb.ColorDefault, tb.ColorDefault}
+)
 
 type Resizable interface {
 	Resize(newBounds Rect)
@@ -67,8 +79,11 @@ type Resizable interface {
 
 type Displayable interface {
 	Padding() Padding
+	SetPadding(p Padding)
 	Bounds() Rect
 	Grid() PixelGrid
+	Palette() Palette
+	SetPalette(p Palette)
 }
 
 type Containable interface {
@@ -99,22 +114,23 @@ func (c TitledContainer) Padding() Padding {
 }
 
 func (c TitledContainer) Grid() PixelGrid {
-	retGrid := make([][]Pixel, c.bounds.y2-c.bounds.y1)
-	for i := range retGrid {
-		retGrid[i] = make([]Pixel, c.bounds.x2-c.bounds.x1)
-	}
+	retGrid := newPixelGrid(c.bounds)
+	fmt.Println(c.bounds)
+	fmt.Println(len(retGrid))
 	contentGrid := c.content.Grid()
 	for i := 0; i < c.bounds.x2-c.bounds.x1-(c.padding.right+c.padding.left); i++ {
 		for j := 0; j < c.bounds.y2-c.bounds.y1-(c.padding.down+c.padding.up); j++ {
-			retGrid[i+c.padding.left][j+c.padding.up] = contentGrid[i][j]
+			fmt.Println("i:", i, "\nj:", j)
+			retGrid[i+c.padding.left-1][j+c.padding.up-1] = contentGrid[i][j]
 		}
 	}
 	return retGrid
 }
 
 type TextBox struct {
-	text   string
-	bounds Rect
+	text    string
+	bounds  Rect
+	palette Palette
 }
 
 func (t TextBox) Grid() PixelGrid {
@@ -140,6 +156,22 @@ func (t TextBox) Padding() Padding {
 	return Padding{0, 0, 0, 0}
 }
 
-func NewTextBox() TextBox {
-	return TextBox{"lololo", Rect{1, 20, 1, 20}}
+func (t TextBox) Palette() Palette {
+	return t.palette
+}
+
+func (t *TextBox) SetPalette(p Palette) {
+	t.palette = p
+}
+
+func (t *TextBox) SetPadding(p Padding) {}
+
+func NewTextBox() *TextBox {
+	ret := TextBox{"lololo", Rect{3, 19, 3, 19}, defaultPalette}
+	return &ret
+}
+
+func SimpleTitledContainer() TitledContainer {
+	ret := TitledContainer{"Lol", true, NewTextBox(), Rect{1, 20, 1, 20}, Padding{3, 3, 3, 3}}
+	return ret
 }
