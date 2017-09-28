@@ -19,6 +19,15 @@ const (
 	selectedBGColor tb.Attribute = backgroundColor | tb.AttrReverse
 )
 
+const (
+	hLine             = '\u2500'
+	vLine             = '\u2502'
+	topLeftCorner     = '\u250C'
+	topRightCorner    = '\u2510'
+	bottomLeftCorner  = '\u2514'
+	bottomRightCorner = '\u2518'
+)
+
 func eraseRange(start, end, y int) {
 	for ; start < end; start++ {
 		eraseHelper(start, y)
@@ -42,19 +51,58 @@ func printHelper(s string, x, y int, fg, bg tb.Attribute) {
 	}
 }
 
+func drawOutline(box containers.Rect) {
+	tb.SetCell(box.X1, box.Y1, topLeftCorner, foregroundColor, backgroundColor)
+	tb.SetCell(box.X2-1, box.Y1, topRightCorner, foregroundColor, backgroundColor)
+	tb.SetCell(box.X1, box.Y2-1, bottomLeftCorner, foregroundColor, backgroundColor)
+	tb.SetCell(box.X2-1, box.Y2-1, bottomRightCorner, foregroundColor, backgroundColor)
+	for i := box.X1 + 1; i < box.X2-1; i++ {
+		tb.SetCell(i, box.Y1, hLine, foregroundColor, backgroundColor)
+		tb.SetCell(i, box.Y2-1, hLine, foregroundColor, backgroundColor)
+	}
+	for j := box.Y1 + 1; j < box.Y2-1; j++ {
+		tb.SetCell(box.X1, j, vLine, foregroundColor, backgroundColor)
+		tb.SetCell(box.X2-1, j, vLine, foregroundColor, backgroundColor)
+	}
+}
+
+func drawContainer(c containers.TitledContainer) {
+	drawOutline(c.Bounds())
+
+	i := c.Bounds().X1 + 1
+	j := c.Bounds().Y1 + 1
+	if c.TitleVisibility {
+		var ch rune
+		for ; i < c.Bounds().X2-1; i++ {
+			if i-c.Bounds().X1-1 < len(c.Title) {
+				ch = []rune(c.Title)[i-c.Bounds().X1-1]
+			} else {
+				ch = ' '
+			}
+			tb.SetCell(i, j, ch, foregroundColor, backgroundColor)
+			tb.SetCell(i, j+1, '=', foregroundColor, backgroundColor)
+		}
+		j += 2
+	}
+	for i = c.Bounds().X1 + 1; i < c.Bounds().X2-1; i++ {
+		for y := j; y < c.Bounds().Y2-1; y++ {
+			tb.SetCell(i, y, ' ', foregroundColor, backgroundColor)
+		}
+	}
+	drawContainable(c.Bounds().X1+c.Padding().Left, c.Bounds().Y1+c.Padding().Up, c.Content)
+}
+
+func drawContainable(x, y int, c containers.Containable) {
+
+}
+
 func Init() {
 	if !initialized {
 		initialized = true
 		tb.Flush()
 		tb.HideCursor()
-		fmt.Println("Setting cell")
 		text := containers.SimpleTitledContainer()
-		for y, sl := range text.Grid() {
-			for x, pixel := range sl {
-				fmt.Println("Setting cell", x, y, "as", pixel.Ch)
-				tb.SetCell(x, y, pixel.Ch, foregroundColor, backgroundColor)
-			}
-		}
+		drawContainer(text)
 
 	loop:
 		for {
