@@ -74,10 +74,6 @@ var (
 		tb.ColorDefault, tb.ColorDefault, tb.ColorDefault, tb.ColorDefault}
 )
 
-type Resizable interface {
-	Resize(newBounds Rect)
-}
-
 type Displayable interface {
 	Padding() Padding
 	SetPadding(p Padding)
@@ -88,7 +84,6 @@ type Displayable interface {
 }
 
 type Containable interface {
-	Resizable
 	Displayable
 }
 
@@ -99,11 +94,6 @@ type TitledContainer struct {
 	Content         Containable
 	bounds          Rect
 	padding         Padding
-}
-
-func (c *TitledContainer) Resize(newBounds Rect) {
-	c.Content.Resize(newBounds.resizeByPadding(c.padding))
-	c.bounds = newBounds
 }
 
 func (c TitledContainer) Bounds() Rect {
@@ -129,21 +119,23 @@ func (c TitledContainer) Grid() PixelGrid {
 }
 
 type TextBox struct {
-	text    string
+	Text    string
 	bounds  Rect
 	palette Palette
 }
 
 func (t TextBox) Grid() PixelGrid {
 	retGrid := newPixelGrid(t.bounds)
-	if len(t.text) > 10 {
+	if len(t.Text) > 10 {
 		panic("LOLOL")
 	}
-	for i, s := range t.text {
+	for i, s := range t.Text {
 		retGrid[0][i] = Pixel{s, normal}
 	}
 	return retGrid
 }
+
+func (t TextBox) SetPadding(p Padding) {}
 
 func (t TextBox) Bounds() Rect {
 	return t.bounds
@@ -164,8 +156,6 @@ func (t TextBox) Palette() Palette {
 func (t *TextBox) SetPalette(p Palette) {
 	t.palette = p
 }
-
-func (t *TextBox) SetPadding(p Padding) {}
 
 func NewTextBox() *TextBox {
 	ret := TextBox{"lololo", Rect{3, 19, 3, 19}, defaultPalette}

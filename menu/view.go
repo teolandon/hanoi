@@ -1,4 +1,4 @@
-package menu
+package view
 
 import "fmt"
 import tb "github.com/nsf/termbox-go"
@@ -42,6 +42,7 @@ func eraseHelper(x, y int) {
 
 func printStr(s string, x, y int) {
 	printHelper(s, x, y, foregroundColor, backgroundColor)
+	tb.Sync()
 }
 
 // Does NOT Sync Terminal
@@ -93,7 +94,10 @@ func drawContainer(c containers.TitledContainer) {
 }
 
 func drawContainable(x, y int, c containers.Containable) {
-
+	switch v := c.(type) {
+	case *containers.TextBox:
+		printStr(v.Text, x, y)
+	}
 }
 
 func Init() {
