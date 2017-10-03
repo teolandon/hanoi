@@ -33,7 +33,7 @@ const (
 // }
 
 func printStr(s string, x, y int, foregroundColor, backgroundColor Color) {
-	printHelper(s, x, y, foregroundColor.toTermAttr(), backgroundColor.toTermAttr())
+	printHelper(s, x, y, foregroundColor.asTermAttr(), backgroundColor.asTermAttr())
 	tb.Sync()
 }
 
@@ -44,23 +44,27 @@ func printHelper(s string, x, y int, fg, bg tb.Attribute) {
 	}
 }
 
-func drawOutline(coords Coords, size Size) {
-	tb.SetCell(coords.X, coords.Y, topLeftCorner, foregroundColor, backgroundColor)
-	tb.SetCell(coords.X+size.Width-1, coords.Y, topRightCorner, foregroundColor, backgroundColor)
-	tb.SetCell(coords.X, coords.Y+size.Height-1, bottomLeftCorner, foregroundColor, backgroundColor)
-	tb.SetCell(coords.X+size.Width-1, coords.Y+size.Height-1, bottomRightCorner, foregroundColor, backgroundColor)
+func drawOutline(coords Coords, size Size, foregroundColor, backgroundColor Color) {
+	tbFG := foregroundColor.asTermAttr()
+	tbBG := backgroundColor.asTermAttr()
+	tb.SetCell(coords.X, coords.Y, topLeftCorner, tbFG, tbBG)
+	tb.SetCell(coords.X+size.Width-1, coords.Y, topRightCorner, tbFG, tbBG)
+	tb.SetCell(coords.X, coords.Y+size.Height-1, bottomLeftCorner, tbFG, tbBG)
+	tb.SetCell(coords.X+size.Width-1, coords.Y+size.Height-1, bottomRightCorner, tbFG, tbBG)
 	for i := coords.X + 1; i < coords.X+size.Width-1; i++ {
-		tb.SetCell(i, coords.Y, hLine, foregroundColor, backgroundColor)
-		tb.SetCell(i, coords.Y+size.Height-1, hLine, foregroundColor, backgroundColor)
+		tb.SetCell(i, coords.Y, hLine, tbFG, tbBG)
+		tb.SetCell(i, coords.Y+size.Height-1, hLine, tbFG, tbBG)
 	}
 	for j := coords.Y + 1; j < coords.Y+size.Height-1; j++ {
-		tb.SetCell(coords.X, j, vLine, foregroundColor, backgroundColor)
-		tb.SetCell(coords.X+size.Width-1, j, vLine, foregroundColor, backgroundColor)
+		tb.SetCell(coords.X, j, vLine, tbFG, tbBG)
+		tb.SetCell(coords.X+size.Width-1, j, vLine, tbFG, tbBG)
 	}
 }
 
 func drawContainer(c TitledContainer) {
-	drawOutline(c.Coords, c.Size)
+	drawOutline(c.Coords, c.Size, c.Palette.normalFG, c.Palette.normalBG)
+	tbFG := c.Palette.normalFG.asTermAttr()
+	tbBG := c.Palette.normalBG.asTermAttr()
 
 	i := c.Coords.X + 1
 	j := c.Coords.Y + 1
@@ -72,14 +76,14 @@ func drawContainer(c TitledContainer) {
 			} else {
 				ch = ' '
 			}
-			tb.SetCell(i, j, ch, foregroundColor, backgroundColor)
-			tb.SetCell(i, j+1, '=', foregroundColor, backgroundColor)
+			tb.SetCell(i, j, ch, tbFG, tbBG)
+			tb.SetCell(i, j+1, '=', tbFG, tbBG)
 		}
 		j += 2
 	}
 	for i = c.Coords.X + 1; i < c.Coords.X+c.Size.Width-1; i++ {
 		for y := j; y < c.Coords.Y+c.Size.Height-1; y++ {
-			tb.SetCell(i, y, ' ', foregroundColor, backgroundColor)
+			tb.SetCell(i, y, ' ', tbFG, tbBG)
 		}
 	}
 	drawContent(c.DrawableArea(), c.Coords.X+1+c.Padding.Left, j+c.Padding.Up, c.Content)
@@ -102,7 +106,7 @@ func printTextBox(parentArea Area, x, y int, t TextBox) {
 	wrapped := strutil.WrapText(t.Text, width, height)
 	for i, str := range wrapped {
 		fmt.Println("printing "+str+" at", x, y+i)
-		printStr(str, x, y+i)
+		printStr(str, x, y+i, t.Palette.normalFG, t.Palette.normalBG)
 	}
 }
 
