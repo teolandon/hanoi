@@ -2,20 +2,13 @@ package view
 
 import "fmt"
 import tb "github.com/nsf/termbox-go"
+import "github.com/teolandon/hanoi/utils"
 import "strconv"
 import "unicode/utf8"
 import "time"
 
 var (
 	initialized = false
-)
-
-const (
-	backgroundColor tb.Attribute = tb.ColorBlue
-	foregroundColor tb.Attribute = tb.ColorDefault
-	ambientColor    tb.Attribute = tb.ColorDefault
-	selectedFGColor tb.Attribute = foregroundColor | tb.AttrReverse
-	selectedBGColor tb.Attribute = backgroundColor | tb.AttrReverse
 )
 
 const (
@@ -27,20 +20,20 @@ const (
 	bottomRightCorner = '\u2518'
 )
 
-func eraseRange(start, end, y int) {
-	for ; start < end; start++ {
-		eraseHelper(start, y)
-	}
-	tb.Sync()
-}
+// func eraseRange(start, end, y int) {
+// 	for ; start < end; start++ {
+// 		eraseHelper(start, y)
+// 	}
+// 	tb.Sync()
+// }
 
-// Does NOT Sync terminal
-func eraseHelper(x, y int) {
-	tb.SetCell(x, y, ' ', ambientColor, ambientColor)
-}
+// // Does NOT Sync terminal
+// func eraseHelper(x, y int) {
+// 	tb.SetCell(x, y, ' ', ambientColor, ambientColor)
+// }
 
-func printStr(s string, x, y int) {
-	printHelper(s, x, y, foregroundColor, backgroundColor)
+func printStr(s string, x, y int, foregroundColor, backgroundColor Color) {
+	printHelper(s, x, y, foregroundColor.toTermAttr(), backgroundColor.toTermAttr())
 	tb.Sync()
 }
 
@@ -84,18 +77,32 @@ func drawContainer(c TitledContainer) {
 		}
 		j += 2
 	}
-	for i = c.Coords.X + 1; i < c.Coords.X+c.Size.Height-1; i++ {
+	for i = c.Coords.X + 1; i < c.Coords.X+c.Size.Width-1; i++ {
 		for y := j; y < c.Coords.Y+c.Size.Height-1; y++ {
 			tb.SetCell(i, y, ' ', foregroundColor, backgroundColor)
 		}
 	}
-	drawContent(c.Coords.X+c.Padding.Left, j+c.Padding.Up, c.Content)
+	drawContent(c.DrawableArea(), c.Coords.X+1+c.Padding.Left, j+c.Padding.Up, c.Content)
 }
 
-func drawContent(x, y int, c interface{}) {
+func drawContent(parentArea Area, x, y int, c interface{}) {
 	switch v := c.(type) {
 	case *TextBox:
-		printStr(v.Text, x, y)
+		printTextBox(parentArea, x, y, *v)
+	}
+}
+
+func printTextBox(parentArea Area, x, y int, t TextBox) {
+	var width, height int
+	switch t.Layout {
+	case FitToParent:
+		width = parentArea.Width()
+		height = parentArea.Height()
+	}
+	wrapped := strutil.WrapText(t.Text, width, height)
+	for i, str := range wrapped {
+		fmt.Println("printing "+str+" at", x, y+i)
+		printStr(str, x, y+i)
 	}
 }
 

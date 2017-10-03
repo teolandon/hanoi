@@ -22,15 +22,32 @@ type Layout uint8
 // FitToParent ignores the coordinates and size of the element, and
 // instead assumes them to be the appropriate values to allow the element
 // to fit its parent container.
+//
+// Centered ignored the coordinates, but takes the size into account to
+// center the element in its parent container.
 const (
 	Relative Layout = iota
 	Absolute
 	FitToParent
+	Centered
 )
 
 type Size struct {
 	Width  int
 	Height int
+}
+
+type Area struct {
+	s Size
+	c Coords
+}
+
+func (a Area) Width() int {
+	return a.s.Width
+}
+
+func (a Area) Height() int {
+	return a.s.Height
 }
 
 type Coords struct {
@@ -82,6 +99,16 @@ type TitledContainer struct {
 	Displayable
 }
 
+func (t TitledContainer) DrawableArea() Area {
+	offset := 0
+	if t.TitleVisibility {
+		offset = 2
+	}
+	return Area{Size{t.Size.Width - t.Padding.Left - t.Padding.Right - 2,
+		t.Size.Height - t.Padding.Up - t.Padding.Down - 2 - offset},
+		Coords{t.Coords.X + 1 + t.Padding.Left, t.Coords.Y + 1 + offset + t.Padding.Up}}
+}
+
 type TextBox struct {
 	Text string
 	Displayable
@@ -96,11 +123,13 @@ func displayableWithSize(size Size) Displayable {
 }
 
 func NewTextBox() *TextBox {
-	ret := TextBox{"lololo", defaultDisplayable()}
+	ret := TextBox{"This is my content", displayableWithSize(Size{10, 5})}
+	ret.Palette.normalBG = Black
+	ret.Palette.normalFG = White
 	return &ret
 }
 
 func SimpleTitledContainer() TitledContainer {
-	ret := TitledContainer{"Lol", true, NewTextBox(), displayableWithSize(Size{20, 10})}
+	ret := TitledContainer{"Title", true, NewTextBox(), displayableWithSize(Size{20, 10})}
 	return ret
 }
