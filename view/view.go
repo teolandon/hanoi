@@ -2,7 +2,6 @@ package view
 
 import "fmt"
 import tb "github.com/nsf/termbox-go"
-import "github.com/teolandon/hanoi/containers"
 import "strconv"
 import "unicode/utf8"
 import "time"
@@ -52,31 +51,31 @@ func printHelper(s string, x, y int, fg, bg tb.Attribute) {
 	}
 }
 
-func drawOutline(box containers.Rect) {
-	tb.SetCell(box.X1, box.Y1, topLeftCorner, foregroundColor, backgroundColor)
-	tb.SetCell(box.X2-1, box.Y1, topRightCorner, foregroundColor, backgroundColor)
-	tb.SetCell(box.X1, box.Y2-1, bottomLeftCorner, foregroundColor, backgroundColor)
-	tb.SetCell(box.X2-1, box.Y2-1, bottomRightCorner, foregroundColor, backgroundColor)
-	for i := box.X1 + 1; i < box.X2-1; i++ {
-		tb.SetCell(i, box.Y1, hLine, foregroundColor, backgroundColor)
-		tb.SetCell(i, box.Y2-1, hLine, foregroundColor, backgroundColor)
+func drawOutline(coords Coords, size Size) {
+	tb.SetCell(coords.X, coords.Y, topLeftCorner, foregroundColor, backgroundColor)
+	tb.SetCell(coords.X+size.Width-1, coords.Y, topRightCorner, foregroundColor, backgroundColor)
+	tb.SetCell(coords.X, coords.Y+size.Height-1, bottomLeftCorner, foregroundColor, backgroundColor)
+	tb.SetCell(coords.X+size.Width-1, coords.Y+size.Height-1, bottomRightCorner, foregroundColor, backgroundColor)
+	for i := coords.X + 1; i < coords.X+size.Width-1; i++ {
+		tb.SetCell(i, coords.Y, hLine, foregroundColor, backgroundColor)
+		tb.SetCell(i, coords.Y+size.Height-1, hLine, foregroundColor, backgroundColor)
 	}
-	for j := box.Y1 + 1; j < box.Y2-1; j++ {
-		tb.SetCell(box.X1, j, vLine, foregroundColor, backgroundColor)
-		tb.SetCell(box.X2-1, j, vLine, foregroundColor, backgroundColor)
+	for j := coords.Y + 1; j < coords.Y+size.Height-1; j++ {
+		tb.SetCell(coords.X, j, vLine, foregroundColor, backgroundColor)
+		tb.SetCell(coords.X+size.Width-1, j, vLine, foregroundColor, backgroundColor)
 	}
 }
 
-func drawContainer(c containers.TitledContainer) {
-	drawOutline(c.Bounds())
+func drawContainer(c TitledContainer) {
+	drawOutline(c.Coords, c.Size)
 
-	i := c.Bounds().X1 + 1
-	j := c.Bounds().Y1 + 1
+	i := c.Coords.X + 1
+	j := c.Coords.Y + 1
 	if c.TitleVisibility {
 		var ch rune
-		for ; i < c.Bounds().X2-1; i++ {
-			if i-c.Bounds().X1-1 < len(c.Title) {
-				ch = []rune(c.Title)[i-c.Bounds().X1-1]
+		for ; i < c.Coords.X+c.Size.Width-1; i++ {
+			if i-c.Coords.X-1 < len(c.Title) {
+				ch = []rune(c.Title)[i-c.Coords.X-1]
 			} else {
 				ch = ' '
 			}
@@ -85,17 +84,17 @@ func drawContainer(c containers.TitledContainer) {
 		}
 		j += 2
 	}
-	for i = c.Bounds().X1 + 1; i < c.Bounds().X2-1; i++ {
-		for y := j; y < c.Bounds().Y2-1; y++ {
+	for i = c.Coords.X + 1; i < c.Coords.X+c.Size.Height-1; i++ {
+		for y := j; y < c.Coords.Y+c.Size.Height-1; y++ {
 			tb.SetCell(i, y, ' ', foregroundColor, backgroundColor)
 		}
 	}
-	drawContainable(c.Bounds().X1+c.Padding().Left, c.Bounds().Y1+c.Padding().Up, c.Content)
+	drawContent(c.Coords.X+c.Padding.Left, j+c.Padding.Up, c.Content)
 }
 
-func drawContainable(x, y int, c containers.Containable) {
+func drawContent(x, y int, c interface{}) {
 	switch v := c.(type) {
-	case *containers.TextBox:
+	case *TextBox:
 		printStr(v.Text, x, y)
 	}
 }
@@ -105,7 +104,7 @@ func Init() {
 		initialized = true
 		tb.Flush()
 		tb.HideCursor()
-		text := containers.SimpleTitledContainer()
+		text := SimpleTitledContainer()
 		drawContainer(text)
 
 	loop:

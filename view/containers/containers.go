@@ -1,7 +1,6 @@
-package containers
+package view
 
 import "fmt"
-import tb "github.com/nsf/termbox-go"
 
 type Accent int8
 
@@ -59,32 +58,25 @@ func (r Rect) resizeAllBy(i int) (ret Rect) {
 }
 
 type Palette struct {
-	normalFG    tb.Attribute
-	normalBG    tb.Attribute
-	highlightFG tb.Attribute
-	highlightBG tb.Attribute
-	accent1FG   tb.Attribute
-	accent1BG   tb.Attribute
-	accent2FG   tb.Attribute
-	accent2BG   tb.Attribute
+	normalFG      Color
+	normalBG      Color
+	highlightFG   Color
+	highlightBG   Color
+	accent1FG     Color
+	accent1BG     Color
+	accent2FG     Color
+	accent2BG     Color
+	normalAttr    Attribute
+	highlightAttr Attribute
+	accent1Attr   Attribute
+	accent2Attr   Attribute
 }
 
-var (
-	defaultPalette = Palette{tb.ColorDefault, tb.ColorDefault, tb.ColorDefault, tb.ColorDefault,
-		tb.ColorDefault, tb.ColorDefault, tb.ColorDefault, tb.ColorDefault}
-)
-
-type Displayable interface {
-	Padding() Padding
-	SetPadding(p Padding)
-	Bounds() Rect
-	Grid() PixelGrid
-	Palette() Palette
-	SetPalette(p Palette)
-}
-
-type Containable interface {
-	Displayable
+type Displayable struct {
+	Padding Padding
+	Bounds  Rect
+	Grid    PixelGrid
+	Palette Palette
 }
 
 // resize() should call content().resize() or similar
