@@ -50,6 +50,22 @@ func (a Area) Height() int {
 	return a.s.Height
 }
 
+func (a Area) X1() int {
+	return a.c.X
+}
+
+func (a Area) Y1() int {
+	return a.c.Y
+}
+
+func (a Area) X2() int {
+	return a.c.X + a.Width()
+}
+
+func (a Area) Y2() int {
+	return a.c.Y + a.Height()
+}
+
 type Coords struct {
 	X int
 	Y int
@@ -115,21 +131,21 @@ type TextBox struct {
 }
 
 func defaultDisplayable() Displayable {
-	return Displayable{Padding{1, 1, 1, 1}, *new(Size), *new(Coords), defaultPalette, FitToParent}
+	return Displayable{*new(Padding), *new(Size), *new(Coords), defaultPalette, FitToParent}
 }
 
 func displayableWithSize(size Size) Displayable {
-	return Displayable{Padding{1, 1, 1, 1}, size, *new(Coords), defaultPalette, FitToParent}
+	return Displayable{*new(Padding), size, *new(Coords), defaultPalette, FitToParent}
 }
 
-func NewTextBox() *TextBox {
-	ret := TextBox{"This is my content", displayableWithSize(Size{10, 5})}
-	ret.Palette.normalBG = Black
-	ret.Palette.normalFG = White
+func NewTextBox(text string) *TextBox {
+	ret := TextBox{text, displayableWithSize(Size{10, 5})}
 	return &ret
 }
 
 func SimpleTitledContainer() TitledContainer {
-	ret := TitledContainer{"Title", true, NewTextBox(), displayableWithSize(Size{20, 10})}
+	text := "Bigwordrighhere, butbigworderetoo, it, it has nice and small words, no long schlbberknockers"
+	ret := TitledContainer{"Title", true, NewTextBox(text), displayableWithSize(Size{20, 10})}
+	ret.Layout = Centered
 	return ret
 }
