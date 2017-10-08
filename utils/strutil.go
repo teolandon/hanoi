@@ -8,6 +8,7 @@ import (
 // the condition that small-ish words are preserved, and each string in
 // the returned slice is at most 'limit' long.
 func WrapText(text string, limit, lines int) []string {
+	fmt.Println("Trying to wrap text at", limit, "length")
 	ret := make([]string, lines)
 
 	lineCount, i := 0, 0
@@ -15,7 +16,10 @@ func WrapText(text string, limit, lines int) []string {
 	for i = limit; i < len(text) && lineCount < lines; i += limit {
 		start := i - limit
 		var cut bool
+		fmt.Println("Index of last break char before", i, ":")
 		i, cut = indexOfLastBreakChar(text, start, i+1)
+		fmt.Println(i)
+		fmt.Println()
 
 		ret[lineCount] = text[start:i]
 		lineCount++
@@ -35,7 +39,7 @@ func WrapText(text string, limit, lines int) []string {
 }
 
 func indexOfLastBreakChar(s string, start, end int) (i int, cut bool) {
-	for i := end; i >= start; i-- {
+	for i := end - 1; i >= start; i-- {
 		switch s[i] {
 		case ' ':
 			return i, true

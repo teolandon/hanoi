@@ -144,7 +144,7 @@ func NewTextBox(text string) *TextBox {
 }
 
 func SimpleTitledContainer() TitledContainer {
-	text := "Bigwordrighhere, butbigworderetoo, it, it has nice and small words, no long schlbberknockers"
+	text := "Bigwordrighhere, butbigworderetoo, it, it has nice and small words, no long schlbberknockers to put you out of your lelelle"
 	ret := TitledContainer{"Title", true, NewTextBox(text), displayableWithSize(Size{20, 10})}
 	ret.Layout = Centered
 	return ret
