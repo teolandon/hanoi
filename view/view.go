@@ -7,9 +7,23 @@ import "strconv"
 import "unicode/utf8"
 import "time"
 
+type keyEvent struct {
+	event    tb.Event
+	consumed bool
+}
+
 var (
-	initialized = false
+	initialized             = false
+	focused      *Focusable = nil
+	stopChannel             = make(chan bool)
+	eventChannel            = make(chan keyEvent)
 )
+
+func setFocused(f *Focusable) {
+	stopChannel <- true
+	focused = f
+	f.AcceptInput()
+}
 
 const (
 	hLine             = '\u2500'
@@ -91,7 +105,7 @@ func drawTitledContainer(parentArea Area, c TitledContainer) {
 			tb.SetCell(i, y, ' ', tbFG, tbBG)
 		}
 	}
-	drawDisplayable(getTitledContainerDrawableArea(workingArea, c), c.Content)
+	drawDisplayable(getTitledContainerDrawableArea(workingArea, c), c.Content())
 }
 
 func getTitledContainerDrawableArea(totalArea Area, t TitledContainer) Area {
@@ -120,7 +134,7 @@ func drawDisplayable(parentArea Area, c interface{}) {
 func printTextBox(parentArea Area, t TextBox) {
 	workingArea := getWorkArea(parentArea, Area{t.Size, t.Coords}, t.Layout)
 	paintArea(parentArea, t.Palette.normalFG, t.Palette.normalBG)
-	wrapped := strutil.WrapText(t.Text, workingArea.Width(), workingArea.Height())
+	wrapped := utils.WrapText(t.Text, workingArea.Width(), workingArea.Height())
 	for i, str := range wrapped {
 		fmt.Println("printing "+str+" at", workingArea.X1(), workingArea.Y1()+i)
 		printStr(str, workingArea.X1(), workingArea.Y1()+i, t.Palette.normalFG, t.Palette.normalBG)

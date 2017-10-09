@@ -111,8 +111,16 @@ type Displayable struct {
 type TitledContainer struct {
 	Title           string
 	TitleVisibility bool
-	Content         interface{}
+	content         interface{}
 	Displayable
+}
+
+func (t TitledContainer) Content() interface{} {
+	return t.content
+}
+
+func (t *TitledContainer) SetContent(c interface{}) {
+	t.content = c
 }
 
 func (t TitledContainer) DrawableArea() Area {
