@@ -173,9 +173,27 @@ func Init() {
 		tb.HideCursor()
 		container := SimpleTitledContainer()
 		drawDisplayable(getTerminalArea(), container)
+		textb := container.content.(*TextBox)
+		focused = textb
+		go pollEvents()
 
 		for {
 			tb.Sync()
+			select {
+			case ev := <-eventChannel:
+				executeEvent(ev, focused)
+			case <-stopChannel:
+				fmt.Println("At least got to here")
+				return
+			}
+		}
+	}
+}
+
+func pollEvents() {
+	for {
+		select {
+		default:
 			switch ev := tb.PollEvent(); ev.Type {
 			case tb.EventKey:
 				eventChannel <- KeyEvent{ev, false}
@@ -183,7 +201,11 @@ func Init() {
 				fmt.Println("Uncovered event:", ev)
 				time.Sleep(10 * time.Millisecond)
 			}
+
+		case <-stopChannel:
+			return
 		}
+
 	}
 }
 
@@ -198,6 +220,11 @@ func acceptInput(f Focusable) {
 			}
 		}
 	}()
+}
+
+func exit() {
+	close(stopChannel)
+
 }
 
 func intCharSize(i int) int {

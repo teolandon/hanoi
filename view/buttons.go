@@ -10,11 +10,11 @@ type Button struct {
 }
 
 type Parent struct {
-	p Focusable
+	parent Focusable
 }
 
 func (par Parent) Parent() Focusable {
-	return par.p
+	return par.parent
 }
 
 func (b Button) HandleKey(e KeyEvent) {

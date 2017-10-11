@@ -1,5 +1,9 @@
 package view
 
+import (
+	"fmt"
+)
+
 type Accent int8
 
 const (
@@ -115,6 +119,10 @@ type TitledContainer struct {
 	Displayable
 }
 
+func (TitledContainer) Parent() Focusable {
+	return nil
+}
+
 func (t TitledContainer) Content() interface{} {
 	return t.content
 }
@@ -136,6 +144,20 @@ func (t TitledContainer) DrawableArea() Area {
 type TextBox struct {
 	Text string
 	Displayable
+	parent Focusable
+}
+
+func (t TextBox) Parent() Focusable {
+	return t.parent
+}
+
+func (TextBox) HandleKey(e KeyEvent) {
+	fmt.Println("Here yes?")
+	if e.event.Ch == 'q' {
+		fmt.Println("Here maybe?")
+		exit()
+		e.consumed = true
+	}
 }
 
 func defaultDisplayable() Displayable {
@@ -147,13 +169,15 @@ func displayableWithSize(size Size) Displayable {
 }
 
 func NewTextBox(text string) *TextBox {
-	ret := TextBox{text, displayableWithSize(Size{10, 5})}
+	ret := TextBox{text, displayableWithSize(Size{10, 5}), Parent{nil}}
 	return &ret
 }
 
 func SimpleTitledContainer() TitledContainer {
 	text := "Bigwordrighhere, butbigworderetoo, it, it has nice and small words, no long schlbberknockers to put you out of your lelelle"
 	ret := TitledContainer{"Title", true, NewTextBox(text), displayableWithSize(Size{20, 10})}
+	textb := ret.content.(*TextBox)
+	textb.parent = Parent{ret}
 	ret.Layout = Centered
 	return ret
 }
