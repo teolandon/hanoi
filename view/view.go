@@ -39,7 +39,6 @@ func paintArea(area Area, fgColor, bgColor Color) {
 	bg := bgColor.asTermAttr()
 	for i := area.X1(); i < area.X2(); i++ {
 		for j := area.Y1(); j < area.Y2(); j++ {
-			fmt.Println("erasing at", i, ":", j)
 			tb.SetCell(i, j, ' ', fg, bg)
 		}
 	}
@@ -119,8 +118,6 @@ func getTitledContainerDrawableArea(totalArea Area, t TitledContainer) Area {
 }
 
 func drawDisplayable(parentArea Area, c interface{}) {
-	fmt.Println("Drawing in area {", parentArea.X1(), "-", parentArea.X2(), ":",
-		parentArea.Y1(), "-", parentArea.Y2(), "}")
 	switch v := c.(type) {
 	case *TextBox:
 		printTextBox(parentArea, *v)
@@ -136,7 +133,6 @@ func printTextBox(parentArea Area, t TextBox) {
 	paintArea(parentArea, t.Palette.normalFG, t.Palette.normalBG)
 	wrapped := utils.WrapText(t.Text, workingArea.Width(), workingArea.Height())
 	for i, str := range wrapped {
-		fmt.Println("printing "+str+" at", workingArea.X1(), workingArea.Y1()+i)
 		printStr(str, workingArea.X1(), workingArea.Y1()+i, t.Palette.normalFG, t.Palette.normalBG)
 	}
 }
@@ -183,7 +179,6 @@ func Init() {
 			case ev := <-eventChannel:
 				executeEvent(ev, focused)
 			case <-stopChannel:
-				fmt.Println("At least got to here")
 				return
 			}
 		}

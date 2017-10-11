@@ -1,9 +1,5 @@
 package view
 
-import (
-	"fmt"
-)
-
 type Accent int8
 
 const (
@@ -152,9 +148,7 @@ func (t TextBox) Parent() Focusable {
 }
 
 func (TextBox) HandleKey(e KeyEvent) {
-	fmt.Println("Here yes?")
 	if e.event.Ch == 'q' {
-		fmt.Println("Here maybe?")
 		exit()
 		e.consumed = true
 	}

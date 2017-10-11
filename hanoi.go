@@ -2,7 +2,6 @@ package main
 
 import "github.com/nsf/termbox-go"
 import "github.com/teolandon/hanoi/view"
-import "fmt"
 
 func testMe() (ret []termbox.Cell) {
 	err := termbox.Init()
@@ -23,6 +22,5 @@ func testMe() (ret []termbox.Cell) {
 }
 
 func main() {
-	c := testMe()
-	fmt.Println(c[2])
+	testMe()
 }
