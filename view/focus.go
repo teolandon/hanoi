@@ -1,32 +1,26 @@
 package view
 
-type Focusable struct {
-	parent      *Focusable
-	handleEvent func(event keyEvent)
+type KeyHandler interface {
+	HandleKey(event KeyEvent)
 }
 
-func (f Focusable) RequestFocus() {
-	setFocused(&f)
+type Focusable interface {
+	Parent() Focusable
 }
 
-func (f Focusable) AcceptInput() {
-	go func() {
-		for {
-			select {
-			case event := <-eventChannel:
-				f.executeEvent(event)
-			case <-stopChannel:
-				return
-			}
-		}
-	}()
+func RequestFocus(f Focusable) {
+	setFocused(f)
 }
 
-func (f Focusable) executeEvent(event keyEvent) {
-	if event.consumed {
+func executeEvent(event KeyEvent, f Focusable) {
+	if event.consumed || f == nil {
 		return
 	}
 
-	f.handleEvent(event)
-	f.parent.handleEvent(event)
+	handler, ok := f.(KeyHandler)
+	if ok {
+		handler.HandleKey(event)
+	}
+
+	executeEvent(event, f.Parent())
 }

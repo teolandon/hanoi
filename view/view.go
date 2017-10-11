@@ -7,22 +7,22 @@ import "strconv"
 import "unicode/utf8"
 import "time"
 
-type keyEvent struct {
+type KeyEvent struct {
 	event    tb.Event
 	consumed bool
 }
 
 var (
-	initialized             = false
-	focused      *Focusable = nil
-	stopChannel             = make(chan bool)
-	eventChannel            = make(chan keyEvent)
+	initialized  = false
+	focused      Focusable
+	stopChannel  = make(chan bool)
+	eventChannel = make(chan KeyEvent)
 )
 
-func setFocused(f *Focusable) {
+func setFocused(f Focusable) {
 	stopChannel <- true
 	focused = f
-	f.AcceptInput()
+	acceptInput(f)
 }
 
 const (
@@ -174,22 +174,30 @@ func Init() {
 		container := SimpleTitledContainer()
 		drawDisplayable(getTerminalArea(), container)
 
-	loop:
 		for {
 			tb.Sync()
 			switch ev := tb.PollEvent(); ev.Type {
 			case tb.EventKey:
-				if ev.Key == tb.KeyEsc || ev.Ch == 'q' {
-					break loop
-				} else {
-					fmt.Println("Uncovered event:", ev)
-				}
+				eventChannel <- KeyEvent{ev, false}
 			default:
 				fmt.Println("Uncovered event:", ev)
 				time.Sleep(10 * time.Millisecond)
 			}
 		}
 	}
+}
+
+func acceptInput(f Focusable) {
+	go func() {
+		for {
+			select {
+			case event := <-eventChannel:
+				executeEvent(event, f)
+			case <-stopChannel:
+				return
+			}
+		}
+	}()
 }
 
 func intCharSize(i int) int {
