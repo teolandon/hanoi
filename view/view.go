@@ -34,11 +34,11 @@ const (
 	bottomRightCorner = '\u2518'
 )
 
-func paintArea(area Area, fgColor, bgColor Color) {
+func paintArea(a area, fgColor, bgColor Color) {
 	fg := fgColor.asTermAttr()
 	bg := bgColor.asTermAttr()
-	for i := area.X1(); i < area.X2(); i++ {
-		for j := area.Y1(); j < area.Y2(); j++ {
+	for i := a.x1; i < a.x2; i++ {
+		for j := a.y1; j < a.y2; j++ {
 			tb.SetCell(i, j, ' ', fg, bg)
 		}
 	}
@@ -57,40 +57,40 @@ func printHelper(s string, x, y int, fg, bg tb.Attribute) {
 	}
 }
 
-func drawOutline(area Area, foregroundColor, backgroundColor Color) {
+func drawOutline(area area, foregroundColor, backgroundColor Color) {
 	tbFG := foregroundColor.asTermAttr()
 	tbBG := backgroundColor.asTermAttr()
 
 	// Setting corners
-	tb.SetCell(area.X1(), area.Y1(), topLeftCorner, tbFG, tbBG)
-	tb.SetCell(area.X2()-1, area.Y1(), topRightCorner, tbFG, tbBG)
-	tb.SetCell(area.X1(), area.Y2()-1, bottomLeftCorner, tbFG, tbBG)
-	tb.SetCell(area.X2()-1, area.Y2()-1, bottomRightCorner, tbFG, tbBG)
+	tb.SetCell(area.x1, area.y1, topLeftCorner, tbFG, tbBG)
+	tb.SetCell(area.x2-1, area.y1, topRightCorner, tbFG, tbBG)
+	tb.SetCell(area.x1, area.y2-1, bottomLeftCorner, tbFG, tbBG)
+	tb.SetCell(area.x2-1, area.y2-1, bottomRightCorner, tbFG, tbBG)
 
 	// Drawing sides
-	for i := area.X1() + 1; i < area.X2()-1; i++ {
-		tb.SetCell(i, area.Y1(), hLine, tbFG, tbBG)
-		tb.SetCell(i, area.Y2()-1, hLine, tbFG, tbBG)
+	for i := area.x1 + 1; i < area.x2-1; i++ {
+		tb.SetCell(i, area.y1, hLine, tbFG, tbBG)
+		tb.SetCell(i, area.y2-1, hLine, tbFG, tbBG)
 	}
-	for j := area.Y1() + 1; j < area.Y2()-1; j++ {
-		tb.SetCell(area.X1(), j, vLine, tbFG, tbBG)
-		tb.SetCell(area.X2()-1, j, vLine, tbFG, tbBG)
+	for j := area.y1 + 1; j < area.y2-1; j++ {
+		tb.SetCell(area.x1, j, vLine, tbFG, tbBG)
+		tb.SetCell(area.x2-1, j, vLine, tbFG, tbBG)
 	}
 }
 
-func drawTitledContainer(parentArea Area, c TitledContainer) {
-	workingArea := getWorkArea(parentArea, Area{c.Size, c.Coords}, c.Layout)
+func drawTitledContainer(parentArea area, c TitledContainer) {
+	workingArea := getWorkArea(parentArea, c.Size, c.Layout)
 	drawOutline(workingArea, c.Palette.normalFG, c.Palette.normalBG)
 	tbFG := c.Palette.normalFG.asTermAttr()
 	tbBG := c.Palette.normalBG.asTermAttr()
 
-	i := workingArea.X1() + 1
-	j := workingArea.Y1() + 1
+	i := workingArea.x1 + 1
+	j := workingArea.y1 + 1
 	if c.TitleVisibility {
 		var ch rune
-		for ; i < workingArea.X2()-1; i++ {
-			if i-workingArea.X1()-1 < len(c.Title) {
-				ch = []rune(c.Title)[i-workingArea.X1()-1]
+		for ; i < workingArea.x2-1; i++ {
+			if i-workingArea.x1-1 < len(c.Title) {
+				ch = []rune(c.Title)[i-workingArea.x1-1]
 			} else {
 				ch = ' '
 			}
@@ -99,25 +99,29 @@ func drawTitledContainer(parentArea Area, c TitledContainer) {
 		}
 		j += 2
 	}
-	for i = workingArea.X1() + 1; i < workingArea.X2()-1; i++ {
-		for y := j; y < workingArea.Y2()-1; y++ {
+	for i = workingArea.x1 + 1; i < workingArea.x2-1; i++ {
+		for y := j; y < workingArea.y2-1; y++ {
 			tb.SetCell(i, y, ' ', tbFG, tbBG)
 		}
 	}
-	drawDisplayable(getTitledContainerDrawableArea(workingArea, c), c.Content())
+	childX, childY, s := c.DrawableArea()
+	drawDisplayable(newArea(childX+workingArea.x1, childY+workingArea.y1, s), c.Content())
 }
 
-func getTitledContainerDrawableArea(totalArea Area, t TitledContainer) Area {
+func getTitledContainerDrawableArea(totalArea area, t TitledContainer) area {
 	offset := 0
 	if t.TitleVisibility {
 		offset = 2
 	}
-	return Area{Size{totalArea.Width() - t.Padding.Left - t.Padding.Right - 2,
-		totalArea.Height() - t.Padding.Up - t.Padding.Down - 2 - offset},
-		Coords{totalArea.X1() + 1 + t.Padding.Left, totalArea.Y1() + 1 + offset + t.Padding.Up}}
+	return area{
+		totalArea.x1 + 1 + t.Padding.Left,
+		totalArea.y1 + 1 + offset + t.Padding.Up,
+		totalArea.Width() - t.Padding.Left - t.Padding.Right - 2,
+		totalArea.Height() - t.Padding.Up - t.Padding.Down - 2 - offset,
+	}
 }
 
-func drawDisplayable(parentArea Area, c interface{}) {
+func drawDisplayable(parentArea area, c interface{}) {
 	switch v := c.(type) {
 	case *TextBox:
 		printTextBox(parentArea, *v)
@@ -128,38 +132,34 @@ func drawDisplayable(parentArea Area, c interface{}) {
 	}
 }
 
-func printTextBox(parentArea Area, t TextBox) {
-	workingArea := getWorkArea(parentArea, Area{t.Size, t.Coords}, t.Layout)
+func printTextBox(parentArea area, t TextBox) {
+	workingArea := getWorkArea(parentArea, t.Size, t.Layout)
 	paintArea(parentArea, t.Palette.normalFG, t.Palette.normalBG)
 	wrapped := utils.WrapText(t.Text, workingArea.Width(), workingArea.Height())
 	for i, str := range wrapped {
-		printStr(str, workingArea.X1(), workingArea.Y1()+i, t.Palette.normalFG, t.Palette.normalBG)
+		printStr(str, workingArea.x1, workingArea.y1+i, t.Palette.normalFG, t.Palette.normalBG)
 	}
 }
 
 // TODO: Handle areas larger than parent area, or in general outside it.
-func getWorkArea(parentArea Area, contentArea Area, layout Layout) Area {
+func getWorkArea(parentArea area, contentSize Size, layout Layout) area {
 	var width, height, x, y int
 	switch layout {
 	case FitToParent:
 		width = parentArea.Width()
 		height = parentArea.Height()
-		x = parentArea.X1()
-		y = parentArea.Y1()
+		x = parentArea.x1
+		y = parentArea.y1
 	case Centered:
-		width = contentArea.Width()
-		height = contentArea.Height()
-		x = parentArea.X1() + (parentArea.Width()-contentArea.Width())/2
-		y = parentArea.Y1() + (parentArea.Height()-contentArea.Height())/2
-	case Absolute:
-		width = contentArea.Width()
-		height = contentArea.Height()
-		x = parentArea.X1() + contentArea.X1()
-		y = parentArea.Y1() + contentArea.Y1()
+		width = contentSize.Width
+		height = contentSize.Height
+		x = parentArea.x1 + (parentArea.Width()-contentSize.Width)/2
+		fmt.Println("x =", parentArea.x1, "+ (", parentArea.Width(), "-", contentSize.Width, ")/2")
+		y = parentArea.y1 + (parentArea.Height()-contentSize.Height)/2
 	default:
 		panic("nooo")
 	}
-	return Area{Size{width, height}, Coords{x, y}}
+	return newArea(x, y, Size{width, height})
 }
 
 func Init() {
@@ -226,7 +226,8 @@ func intCharSize(i int) int {
 	return utf8.RuneCountInString(strconv.Itoa(i))
 }
 
-func getTerminalArea() Area {
-	x, y := tb.Size()
-	return Area{Size{x, y}, Coords{0, 0}}
+func getTerminalArea() area {
+	y, x := tb.Size()
+	fmt.Println("Terminal size:", x, y)
+	return newArea(0, 0, Size{x, y})
 }

@@ -37,38 +37,23 @@ type Size struct {
 	Height int
 }
 
-type Area struct {
-	s Size
-	c Coords
+type area struct {
+	x1 int
+	x2 int
+	y1 int
+	y2 int
 }
 
-func (a Area) Width() int {
-	return a.s.Width
+func (a area) Width() int {
+	return a.y2 - a.y1
 }
 
-func (a Area) Height() int {
-	return a.s.Height
+func (a area) Height() int {
+	return a.x2 - a.x1
 }
 
-func (a Area) X1() int {
-	return a.c.X
-}
-
-func (a Area) Y1() int {
-	return a.c.Y
-}
-
-func (a Area) X2() int {
-	return a.c.X + a.Width()
-}
-
-func (a Area) Y2() int {
-	return a.c.Y + a.Height()
-}
-
-type Coords struct {
-	X int
-	Y int
+func newArea(x, y int, size Size) area {
+	return area{x, x + size.Width, y, y + size.Height}
 }
 
 type Padding struct {
@@ -103,7 +88,6 @@ var (
 type Displayable struct {
 	Padding Padding
 	Size    Size
-	Coords  Coords
 	Palette Palette
 	Layout  Layout
 }
@@ -127,14 +111,18 @@ func (t *TitledContainer) SetContent(c interface{}) {
 	t.content = c
 }
 
-func (t TitledContainer) DrawableArea() Area {
+func (t TitledContainer) DrawableArea() (x, y int, s Size) {
 	offset := 0
 	if t.TitleVisibility {
 		offset = 2
 	}
-	return Area{Size{t.Size.Width - t.Padding.Left - t.Padding.Right - 2,
-		t.Size.Height - t.Padding.Up - t.Padding.Down - 2 - offset},
-		Coords{t.Coords.X + 1 + t.Padding.Left, t.Coords.Y + 1 + offset + t.Padding.Up}}
+	x = 1 + t.Padding.Left
+	y = 1 + offset + t.Padding.Up
+	s = Size{
+		t.Size.Width - t.Padding.Left - t.Padding.Right - 2,
+		t.Size.Height - t.Padding.Up - t.Padding.Down - 2 - offset,
+	}
+	return
 }
 
 type TextBox struct {
@@ -155,11 +143,11 @@ func (TextBox) HandleKey(e KeyEvent) {
 }
 
 func defaultDisplayable() Displayable {
-	return Displayable{*new(Padding), *new(Size), *new(Coords), defaultPalette, FitToParent}
+	return Displayable{*new(Padding), *new(Size), defaultPalette, FitToParent}
 }
 
 func displayableWithSize(size Size) Displayable {
-	return Displayable{*new(Padding), size, *new(Coords), defaultPalette, FitToParent}
+	return Displayable{*new(Padding), size, defaultPalette, FitToParent}
 }
 
 func NewTextBox(text string) *TextBox {
