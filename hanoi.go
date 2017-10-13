@@ -18,6 +18,8 @@ func testMe() (ret []termbox.Cell) {
 
 	view.Init()
 
+	<-view.StoppedChannel
+
 	return
 }
 

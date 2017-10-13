@@ -4,15 +4,16 @@ type KeyHandler interface {
 	HandleKey(event KeyEvent)
 }
 
-type Focusable interface {
-	Parent() Focusable
+type OkCancelDialog struct {
+	container TitledContainer
+	b         Button
 }
 
-func RequestFocus(f Focusable) {
+func RequestFocus(f Displayable) {
 	setFocused(f)
 }
 
-func executeEvent(event KeyEvent, f Focusable) {
+func executeEvent(event KeyEvent, f Displayable) {
 	if event.consumed || f == nil {
 		return
 	}

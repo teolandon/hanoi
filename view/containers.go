@@ -85,22 +85,11 @@ var (
 		Inherit, Inherit, AttrInherit, AttrInherit, AttrInherit, AttrInherit}
 )
 
-type Displayable struct {
-	Padding Padding
-	Size    Size
-	Palette Palette
-	Layout  Layout
-}
-
 type TitledContainer struct {
 	Title           string
 	TitleVisibility bool
 	content         interface{}
 	Displayable
-}
-
-func (TitledContainer) Parent() Focusable {
-	return nil
 }
 
 func (t TitledContainer) Content() interface{} {
@@ -116,11 +105,11 @@ func (t TitledContainer) DrawableArea() (x, y int, s Size) {
 	if t.TitleVisibility {
 		offset = 2
 	}
-	x = 1 + t.Padding.Left
-	y = 1 + offset + t.Padding.Up
+	x = 1 + t.Padding().Left
+	y = 1 + offset + t.Padding().Up
 	s = Size{
-		t.Size.Width - t.Padding.Left - t.Padding.Right - 2,
-		t.Size.Height - t.Padding.Up - t.Padding.Down - 2 - offset,
+		t.Size().Width - t.Padding().Left - t.Padding().Right - 2,
+		t.Size().Height - t.Padding().Up - t.Padding().Down - 2 - offset,
 	}
 	return
 }
@@ -128,38 +117,35 @@ func (t TitledContainer) DrawableArea() (x, y int, s Size) {
 type TextBox struct {
 	Text string
 	Displayable
-	parent Focusable
-}
-
-func (t TextBox) Parent() Focusable {
-	return t.parent
 }
 
 func (TextBox) HandleKey(e KeyEvent) {
 	if e.event.Ch == 'q' {
-		exit()
+		Exit()
 		e.consumed = true
 	}
 }
 
 func defaultDisplayable() Displayable {
-	return Displayable{*new(Padding), *new(Size), defaultPalette, FitToParent}
+	ret := displayable{*new(Padding), *new(Size), defaultPalette, FitToParent, nil}
+	return &ret
 }
 
 func displayableWithSize(size Size) Displayable {
-	return Displayable{*new(Padding), size, defaultPalette, FitToParent}
+	ret := displayable{*new(Padding), size, defaultPalette, FitToParent, nil}
+	return &ret
 }
 
-func NewTextBox(text string) *TextBox {
-	ret := TextBox{text, displayableWithSize(Size{10, 5}), Parent{nil}}
-	return &ret
+func NewTextBox(text string) TextBox {
+	ret := TextBox{text, displayableWithSize(Size{10, 5})}
+	return ret
 }
 
 func SimpleTitledContainer() TitledContainer {
 	text := "Bigwordrighhere, butbigworderetoo, it, it has nice and small words, no long schlbberknockers to put you out of your lelelle"
 	ret := TitledContainer{"Title", true, NewTextBox(text), displayableWithSize(Size{20, 10})}
-	textb := ret.content.(*TextBox)
-	textb.parent = Parent{ret}
-	ret.Layout = Centered
+	textb := ret.content.(TextBox)
+	textb.SetParent(&ret)
+	ret.SetLayout(Centered)
 	return ret
 }
