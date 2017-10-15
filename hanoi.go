@@ -1,25 +1,29 @@
 package main
 
-import "github.com/nsf/termbox-go"
+import "fmt"
 import "github.com/teolandon/hanoi/view"
 
-func testMe() (ret []termbox.Cell) {
-	err := termbox.Init()
+func testMe() {
+	container := view.SimpleTitledContainer()
+	view.SetRoot(container)
+	view.SetFocused(container)
+
+	// termbox.SetInputMode(termbox.InputEsc)
+	// termbox.SetOutputMode(termbox.OutputNormal)
+	// termbox.Clear(termbox.ColorWhite, termbox.ColorRed)
+
+	err := view.Init()
 	if err != nil {
-		panic(err)
+		fmt.Println("LOLOLOL")
+		return
 	}
-	defer termbox.Close()
 
-	ret = termbox.CellBuffer()
+	view.SetFocused(container.Content().(view.TextBox))
 
-	termbox.SetInputMode(termbox.InputEsc)
-	termbox.SetOutputMode(termbox.OutputNormal)
-	termbox.Clear(termbox.ColorWhite, termbox.ColorRed)
-
-	view.Init()
-
+	fmt.Println("before")
 	<-view.StoppedChannel
 
+	fmt.Println("after")
 	return
 }
 

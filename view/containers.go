@@ -45,11 +45,11 @@ type area struct {
 }
 
 func (a area) Width() int {
-	return a.y2 - a.y1
+	return a.x2 - a.x1
 }
 
 func (a area) Height() int {
-	return a.x2 - a.x1
+	return a.y2 - a.y1
 }
 
 func newArea(x, y int, size Size) area {
@@ -88,16 +88,17 @@ var (
 type TitledContainer struct {
 	Title           string
 	TitleVisibility bool
-	content         interface{}
+	content         Displayable
 	Displayable
 }
 
-func (t TitledContainer) Content() interface{} {
+func (t TitledContainer) Content() Displayable {
 	return t.content
 }
 
-func (t *TitledContainer) SetContent(c interface{}) {
+func (t *TitledContainer) SetContent(c Displayable) {
 	t.content = c
+	c.SetParent(t)
 }
 
 func (t TitledContainer) DrawableArea() (x, y int, s Size) {
@@ -119,20 +120,13 @@ type TextBox struct {
 	Displayable
 }
 
-func (TextBox) HandleKey(e KeyEvent) {
-	if e.event.Ch == 'q' {
-		Exit()
-		e.consumed = true
-	}
-}
-
 func defaultDisplayable() Displayable {
-	ret := displayable{*new(Padding), *new(Size), defaultPalette, FitToParent, nil}
+	ret := displayable{*new(Padding), *new(Size), defaultPalette, Centered, nil}
 	return &ret
 }
 
 func displayableWithSize(size Size) Displayable {
-	ret := displayable{*new(Padding), size, defaultPalette, FitToParent, nil}
+	ret := displayable{*new(Padding), size, defaultPalette, Centered, nil}
 	return &ret
 }
 
@@ -143,9 +137,10 @@ func NewTextBox(text string) TextBox {
 
 func SimpleTitledContainer() TitledContainer {
 	text := "Bigwordrighhere, butbigworderetoo, it, it has nice and small words, no long schlbberknockers to put you out of your lelelle"
-	ret := TitledContainer{"Title", true, NewTextBox(text), displayableWithSize(Size{20, 10})}
-	textb := ret.content.(TextBox)
-	textb.SetParent(&ret)
+	textBox := NewTextBox(text)
+	textBox.SetLayout(FitToParent)
+	ret := TitledContainer{"Title", true, nil, displayableWithSize(Size{20, 10})}
+	ret.SetContent(textBox)
 	ret.SetLayout(Centered)
 	return ret
 }

@@ -1,31 +1,39 @@
 package view
 
+import "errors"
 import "fmt"
 import tb "github.com/nsf/termbox-go"
 import "github.com/teolandon/hanoi/utils"
-import "strconv"
-import "unicode/utf8"
 import "time"
+
+var (
+	initialized = false
+	focused     Displayable
+	stopChannel chan bool
+	focusChange = make(chan bool)
+	// StoppedChannel is the channel that signals that
+	// the view has been stopped and exited out of.
+	StoppedChannel chan bool
+	eventChannel   = make(chan KeyEvent)
+	main           mainContainer
+)
 
 type KeyEvent struct {
 	event    tb.Event
 	consumed bool
 }
 
-var (
-	initialized = false
-	focused     Displayable
-	stopChannel = make(chan bool)
-	// StoppedChannel is the channel that signals that
-	// the view has been stopped and exited out of.
-	StoppedChannel = make(chan bool)
-	eventChannel   = make(chan KeyEvent)
-)
-
-func setFocused(f Displayable) {
-	stopChannel <- true
+func SetFocused(f Displayable) {
 	focused = f
-	acceptInput(f)
+	if initialized {
+		focusChange <- true
+		acceptInput(f)
+	}
+}
+
+func SetRoot(f Displayable) {
+	main.child = f
+	f.SetParent(main)
 }
 
 func drawTitledContainer(parentArea area, c TitledContainer) {
@@ -64,6 +72,8 @@ func drawDisplayable(parentArea area, c interface{}) {
 		drawTextBox(parentArea, v)
 	case TitledContainer:
 		drawTitledContainer(parentArea, v)
+	case mainContainer:
+		drawDisplayable(terminalArea(), v.child)
 	default:
 		fmt.Printf("Type of c: %T\n", v)
 	}
@@ -71,6 +81,8 @@ func drawDisplayable(parentArea area, c interface{}) {
 
 func drawTextBox(parentArea area, t TextBox) {
 	workingArea := getWorkArea(parentArea, t.Size(), t.Layout())
+	fmt.Println("parent area for textbox:", parentArea)
+	fmt.Println("working area for textbox:", workingArea)
 	paintArea(parentArea, t.Palette().normalFG, t.Palette().normalBG)
 	wrapped := utils.WrapText(t.Text, workingArea.Width(), workingArea.Height())
 	for i, str := range wrapped {
@@ -90,39 +102,62 @@ func getWorkArea(parentArea area, contentSize Size, layout Layout) area {
 	case Centered:
 		width = contentSize.Width
 		height = contentSize.Height
-		x = parentArea.x1 + (parentArea.Width()-contentSize.Width)/2
-		fmt.Println("x =", parentArea.x1, "+ (", parentArea.Width(), "-", contentSize.Width, ")/2")
-		y = parentArea.y1 + (parentArea.Height()-contentSize.Height)/2
+		x = parentArea.x1 + (parentArea.Width()-width)/2
+		fmt.Println("x =", parentArea.x1, "+ (", parentArea.Width(), "-", width, ")/2")
+		y = parentArea.y1 + (parentArea.Height()-height)/2
 	default:
 		panic("nooo")
 	}
 	return newArea(x, y, Size{width, height})
 }
 
-func Init() {
-	if !initialized {
-		initialized = true
-		tb.Flush()
-		tb.HideCursor()
-		container := SimpleTitledContainer()
-		drawDisplayable(getTerminalArea(), container)
-		textb := container.content.(TextBox)
-		focused = textb
-		go pollEvents()
-
-		go func() {
-			defer close(StoppedChannel)
-			for {
-				tb.Sync()
-				select {
-				case ev := <-eventChannel:
-					executeEvent(ev, focused)
-				case <-stopChannel:
-					return
-				}
-			}
-		}()
+func Init() error {
+	if tb.IsInit {
+		return errors.New("Termbox has already been initialized.")
 	}
+	if initialized {
+		return errors.New("Hanoi has already been initialized.")
+	}
+
+	err := tb.Init()
+	if err != nil {
+		return err
+	}
+
+	tb.SetInputMode(tb.InputEsc)
+	tb.SetOutputMode(tb.OutputNormal)
+	tb.Clear(tb.ColorWhite, tb.ColorRed)
+
+	initialized = true
+	StoppedChannel = make(chan bool)
+	stopChannel = make(chan bool)
+	tb.Flush()
+	tb.HideCursor()
+
+	acceptInput(focused)
+
+	drawDisplayable(terminalArea(), main)
+
+	go pollEvents()
+
+	go func() {
+		defer func() {
+			close(StoppedChannel)
+			initialized = false
+			tb.Close()
+		}()
+		for {
+			tb.Sync()
+			select {
+			case ev := <-eventChannel:
+				executeEvent(ev, focused)
+			case <-stopChannel:
+				return
+			}
+		}
+	}()
+
+	return nil
 }
 
 func pollEvents() {
@@ -148,6 +183,8 @@ func acceptInput(f Displayable) {
 			select {
 			case event := <-eventChannel:
 				executeEvent(event, f)
+			case <-focusChange:
+				return
 			case <-stopChannel:
 				return
 			}
@@ -161,12 +198,58 @@ func Exit() {
 	close(stopChannel)
 }
 
-func intCharSize(i int) int {
-	return utf8.RuneCountInString(strconv.Itoa(i))
+type mainContainer struct {
+	child Displayable
 }
 
-func getTerminalArea() area {
-	y, x := tb.Size()
+func (mainContainer) HandleKey(e KeyEvent) {
+	if e.event.Ch == 'q' {
+		Exit()
+		e.consumed = true
+	}
+}
+
+func (m mainContainer) Children() []Displayable {
+	ret := make([]Displayable, 1)
+	ret[0] = m.child
+	return ret
+}
+
+func (mainContainer) Padding() Padding {
+	return Padding{0, 0, 0, 0}
+}
+
+func (mainContainer) SetPadding(p Padding) {}
+
+func (mainContainer) Size() Size {
+	x, y := tb.Size()
+	return Size{x, y}
+}
+
+func (mainContainer) SetSize(s Size) {}
+
+func (mainContainer) Palette() Palette {
+	return defaultPalette
+}
+
+func (mainContainer) SetPalette(p Palette) {}
+
+func (mainContainer) Layout() Layout {
+	return FitToParent
+}
+
+func (mainContainer) SetLayout(l Layout) {}
+
+func (mainContainer) Parent() Displayable {
+	return nil
+}
+
+func (mainContainer) SetParent(d Displayable) {}
+
+func terminalArea() area {
+	x, y := tb.Size()
 	fmt.Println("Terminal size:", x, y)
-	return newArea(0, 0, Size{x, y})
+	ret := newArea(0, 0, Size{x, y})
+	fmt.Println("Terminal width:", ret.Width())
+	return ret
 }

@@ -1,5 +1,9 @@
 package view
 
+import (
+	"fmt"
+)
+
 type KeyHandler interface {
 	HandleKey(event KeyEvent)
 }
@@ -10,7 +14,7 @@ type OkCancelDialog struct {
 }
 
 func RequestFocus(f Displayable) {
-	setFocused(f)
+	SetFocused(f)
 }
 
 func executeEvent(event KeyEvent, f Displayable) {
@@ -20,8 +24,10 @@ func executeEvent(event KeyEvent, f Displayable) {
 
 	handler, ok := f.(KeyHandler)
 	if ok {
+		fmt.Println("Handling", handler)
 		handler.HandleKey(event)
 	}
+	fmt.Println("Executing handler on", f.Parent())
 
 	executeEvent(event, f.Parent())
 }

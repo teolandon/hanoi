@@ -13,6 +13,10 @@ type Displayable interface {
 	SetParent(p Displayable)
 }
 
+type Parent interface {
+	Children() []Displayable
+}
+
 type displayable struct {
 	padding Padding
 	size    Size
