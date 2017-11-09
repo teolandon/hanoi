@@ -1,5 +1,7 @@
 package view
 
+type pixelGrid [][]rune
+
 type Displayable interface {
 	Padding() Padding
 	SetPadding(p Padding)
@@ -11,6 +13,7 @@ type Displayable interface {
 	SetLayout(p Layout)
 	Parent() Displayable
 	SetParent(p Displayable)
+	PixelGrid(workingArea area) pixelGrid
 }
 
 type Parent interface {
