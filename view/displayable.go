@@ -64,3 +64,13 @@ func (d displayable) Parent() Displayable {
 func (d *displayable) SetParent(dis Displayable) {
 	d.parent = dis
 }
+
+func defaultDisplayable() Displayable {
+	ret := displayable{*new(Padding), *new(Size), defaultPalette, Centered, nil}
+	return &ret
+}
+
+func displayableWithSize(size Size) Displayable {
+	ret := displayable{*new(Padding), size, defaultPalette, Centered, nil}
+	return &ret
+}

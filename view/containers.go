@@ -44,11 +44,11 @@ type area struct {
 	y2 int
 }
 
-func (a area) Width() int {
+func (a area) width() int {
 	return a.x2 - a.x1
 }
 
-func (a area) Height() int {
+func (a area) height() int {
 	return a.y2 - a.y1
 }
 
@@ -83,6 +83,8 @@ var (
 		Magenta, Cyan, AttrDefault, AttrDefault, AttrDefault, AttrDefault}
 	inheritAll = Palette{Inherit, Inherit, Inherit, Inherit, Inherit, Inherit,
 		Inherit, Inherit, AttrInherit, AttrInherit, AttrInherit, AttrInherit}
+	alternatePalette = Palette{Green, Black, Yellow, Black, Magenta, Cyan,
+		Black, White, AttrDefault, AttrDefault, AttrDefault, AttrDefault}
 )
 
 type TitledContainer struct {
@@ -120,16 +122,6 @@ type TextBox struct {
 	Displayable
 }
 
-func defaultDisplayable() Displayable {
-	ret := displayable{*new(Padding), *new(Size), defaultPalette, Centered, nil}
-	return &ret
-}
-
-func displayableWithSize(size Size) Displayable {
-	ret := displayable{*new(Padding), size, defaultPalette, Centered, nil}
-	return &ret
-}
-
 func NewTextBox(text string) TextBox {
 	ret := TextBox{text, displayableWithSize(Size{10, 5})}
 	return ret
@@ -141,6 +133,14 @@ func SimpleTitledContainer() TitledContainer {
 	textBox.SetLayout(FitToParent)
 	ret := TitledContainer{"Title", true, nil, displayableWithSize(Size{20, 10})}
 	ret.SetContent(textBox)
+	ret.SetLayout(Centered)
+	return ret
+}
+
+func ButtonTitledContainer() TitledContainer {
+	ret := TitledContainer{"Test", true, nil, displayableWithSize(Size{20, 10})}
+	button := NewButton("OK")
+	ret.SetContent(button)
 	ret.SetLayout(Centered)
 	return ret
 }

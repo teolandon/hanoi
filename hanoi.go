@@ -4,13 +4,9 @@ import "fmt"
 import "github.com/teolandon/hanoi/view"
 
 func testMe() {
-	container := view.SimpleTitledContainer()
+	container := view.ButtonTitledContainer()
 	view.SetRoot(container)
 	view.SetFocused(container)
-
-	// termbox.SetInputMode(termbox.InputEsc)
-	// termbox.SetOutputMode(termbox.OutputNormal)
-	// termbox.Clear(termbox.ColorWhite, termbox.ColorRed)
 
 	err := view.Init()
 	if err != nil {
@@ -18,7 +14,7 @@ func testMe() {
 		return
 	}
 
-	view.SetFocused(container.Content().(view.TextBox))
+	view.SetFocused(container.Content())
 
 	fmt.Println("before")
 	<-view.StoppedChannel

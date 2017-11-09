@@ -74,17 +74,23 @@ func drawDisplayable(parentArea area, c interface{}) {
 		drawTitledContainer(parentArea, v)
 	case mainContainer:
 		drawDisplayable(terminalArea(), v.child)
+	case Button:
+		drawButton(parentArea, v)
 	default:
 		fmt.Printf("Type of c: %T\n", v)
 	}
 }
 
+func drawButton(parentArea area, b Button) {
+	workingArea := getWorkArea(parentArea, b.Size(), b.Layout())
+	paintArea(workingArea, b.Palette().normalFG, b.Palette().normalBG)
+	printStr(b.Text, workingArea.x1, workingArea.y1, b.Palette().normalFG, b.Palette().normalBG)
+}
+
 func drawTextBox(parentArea area, t TextBox) {
 	workingArea := getWorkArea(parentArea, t.Size(), t.Layout())
-	fmt.Println("parent area for textbox:", parentArea)
-	fmt.Println("working area for textbox:", workingArea)
 	paintArea(parentArea, t.Palette().normalFG, t.Palette().normalBG)
-	wrapped := utils.WrapText(t.Text, workingArea.Width(), workingArea.Height())
+	wrapped := utils.WrapText(t.Text, workingArea.width(), workingArea.height())
 	for i, str := range wrapped {
 		printStr(str, workingArea.x1, workingArea.y1+i, t.Palette().normalFG, t.Palette().normalBG)
 	}
@@ -95,16 +101,15 @@ func getWorkArea(parentArea area, contentSize Size, layout Layout) area {
 	var width, height, x, y int
 	switch layout {
 	case FitToParent:
-		width = parentArea.Width()
-		height = parentArea.Height()
+		width = parentArea.width()
+		height = parentArea.height()
 		x = parentArea.x1
 		y = parentArea.y1
 	case Centered:
 		width = contentSize.Width
 		height = contentSize.Height
-		x = parentArea.x1 + (parentArea.Width()-width)/2
-		fmt.Println("x =", parentArea.x1, "+ (", parentArea.Width(), "-", width, ")/2")
-		y = parentArea.y1 + (parentArea.Height()-height)/2
+		x = parentArea.x1 + (parentArea.width()-width)/2
+		y = parentArea.y1 + (parentArea.height()-height)/2
 	default:
 		panic("nooo")
 	}
@@ -250,6 +255,6 @@ func terminalArea() area {
 	x, y := tb.Size()
 	fmt.Println("Terminal size:", x, y)
 	ret := newArea(0, 0, Size{x, y})
-	fmt.Println("Terminal width:", ret.Width())
+	fmt.Println("Terminal width:", ret.width())
 	return ret
 }
