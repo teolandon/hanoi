@@ -4,6 +4,7 @@ import "errors"
 import "fmt"
 import tb "github.com/nsf/termbox-go"
 import "github.com/teolandon/hanoi/utils"
+import "github.com/teolandon/hanoi/view/colors"
 import "time"
 
 var (
@@ -38,9 +39,9 @@ func SetRoot(f Displayable) {
 
 func drawTitledContainer(parentArea area, c TitledContainer) {
 	workingArea := getWorkArea(parentArea, c.Size(), c.Layout())
-	drawOutline(workingArea, c.Palette().normalFG, c.Palette().normalBG)
-	tbFG := c.Palette().normalFG.asTermAttr()
-	tbBG := c.Palette().normalBG.asTermAttr()
+	drawOutline(workingArea, c.Palette().NormalFG, c.Palette().NormalBG)
+	tbFG := c.Palette().NormalFG.AsTermAttr()
+	tbBG := c.Palette().NormalBG.AsTermAttr()
 
 	i := workingArea.x1 + 1
 	j := workingArea.y1 + 1
@@ -83,16 +84,16 @@ func drawDisplayable(parentArea area, c interface{}) {
 
 func drawButton(parentArea area, b Button) {
 	workingArea := getWorkArea(parentArea, b.Size(), b.Layout())
-	paintArea(workingArea, b.Palette().normalFG, b.Palette().normalBG)
-	printStr(b.Text, workingArea.x1, workingArea.y1, b.Palette().normalFG, b.Palette().normalBG)
+	paintArea(workingArea, b.Palette().NormalFG, b.Palette().NormalBG)
+	printStr(b.Text, workingArea.x1, workingArea.y1, b.Palette().NormalFG, b.Palette().NormalBG)
 }
 
 func drawTextBox(parentArea area, t TextBox) {
 	workingArea := getWorkArea(parentArea, t.Size(), t.Layout())
-	paintArea(parentArea, t.Palette().normalFG, t.Palette().normalBG)
+	paintArea(parentArea, t.Palette().NormalFG, t.Palette().NormalBG)
 	wrapped := utils.WrapText(t.Text, workingArea.width(), workingArea.height())
 	for i, str := range wrapped {
-		printStr(str, workingArea.x1, workingArea.y1+i, t.Palette().normalFG, t.Palette().normalBG)
+		printStr(str, workingArea.x1, workingArea.y1+i, t.Palette().NormalFG, t.Palette().NormalBG)
 	}
 }
 
@@ -233,11 +234,11 @@ func (mainContainer) Size() Size {
 
 func (mainContainer) SetSize(s Size) {}
 
-func (mainContainer) Palette() Palette {
-	return defaultPalette
+func (mainContainer) Palette() colors.Palette {
+	return colors.DefaultPalette
 }
 
-func (mainContainer) SetPalette(p Palette) {}
+func (mainContainer) SetPalette(p colors.Palette) {}
 
 func (mainContainer) Layout() Layout {
 	return FitToParent

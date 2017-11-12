@@ -29,6 +29,10 @@ func WrapText(text string, limit, lines int) []string {
 	return ret
 }
 
+func StrLength(str string) int {
+	return len([]rune(str))
+}
+
 func indexOfLastBreakChar(s string, start, end int) (i int, cut bool) {
 	for i := end - 1; i >= start; i-- {
 		switch s[i] {

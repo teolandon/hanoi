@@ -2,17 +2,26 @@ package view
 
 import tb "github.com/nsf/termbox-go"
 import "github.com/teolandon/hanoi/utils"
+import colors "github.com/teolandon/hanoi/view/colors"
 
 // Button is a UI component that has a text label,
 // and performs an action when hit (using enter)
 type Button struct {
 	Text string
 	Run  func()
-	Displayable
+	displayable
 }
 
-func (b Button) PixelGrid(workingArea area) pixelGrid {
-	ret := utils.NewPixelGrid
+func (b Button) PixelGrid(workingArea area) colors.PixelGrid {
+	ret := utils.NewPixelGrid(workingArea.width(), workingArea.height())
+
+	y := (workingArea.height() / 2)
+
+	startX := utils.IntMax(0, (workingArea.width()-utils.StrLength(b.Text))/2)
+
+	utils.WritePixels(ret[y], b.Text, colors.Default, colors.AttrDefault)
+
+	return colors.PixelGrid(ret)
 }
 
 func (b Button) HandleKey(e KeyEvent) {
@@ -23,13 +32,13 @@ func (b Button) HandleKey(e KeyEvent) {
 }
 
 func (b Button) Size() Size {
-	orig := b.Displayable.Size()
+	orig := b.displayable.Size()
 	return Size{orig.Width, 1}
 }
 
 func NewButton(text string) Button {
 	ret := Button{text, func() {}, defaultDisplayable()}
-	ret.SetPalette(alternatePalette)
+	ret.SetPalette(colors.AlternatePalette)
 	ret.SetSize(Size{5, 1})
 	return ret
 }

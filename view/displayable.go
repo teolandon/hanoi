@@ -1,19 +1,19 @@
 package view
 
-type pixelGrid [][]rune
+import "github.com/teolandon/hanoi/view/colors"
 
 type Displayable interface {
 	Padding() Padding
 	SetPadding(p Padding)
 	Size() Size
 	SetSize(s Size)
-	Palette() Palette
-	SetPalette(p Palette)
+	Palette() colors.Palette
+	SetPalette(p colors.Palette)
 	Layout() Layout
 	SetLayout(p Layout)
 	Parent() Displayable
 	SetParent(p Displayable)
-	PixelGrid(workingArea area) pixelGrid
+	PixelGrid(workingArea area) colors.PixelGrid
 }
 
 type Parent interface {
@@ -23,7 +23,7 @@ type Parent interface {
 type displayable struct {
 	padding Padding
 	size    Size
-	palette Palette
+	palette colors.Palette
 	layout  Layout
 	parent  Displayable
 }
@@ -44,11 +44,11 @@ func (d *displayable) SetSize(s Size) {
 	d.size = s
 }
 
-func (d displayable) Palette() Palette {
+func (d displayable) Palette() colors.Palette {
 	return d.palette
 }
 
-func (d *displayable) SetPalette(p Palette) {
+func (d *displayable) SetPalette(p colors.Palette) {
 	d.palette = p
 }
 
@@ -68,12 +68,12 @@ func (d *displayable) SetParent(dis Displayable) {
 	d.parent = dis
 }
 
-func defaultDisplayable() Displayable {
-	ret := displayable{*new(Padding), *new(Size), defaultPalette, Centered, nil}
-	return &ret
+func defaultDisplayable() displayable {
+	ret := displayable{*new(Padding), *new(Size), colors.DefaultPalette, Centered, nil}
+	return ret
 }
 
-func displayableWithSize(size Size) Displayable {
-	ret := displayable{*new(Padding), size, defaultPalette, Centered, nil}
-	return &ret
+func displayableWithSize(size Size) displayable {
+	ret := displayable{*new(Padding), size, colors.DefaultPalette, Centered, nil}
+	return ret
 }

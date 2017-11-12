@@ -63,35 +63,11 @@ type Padding struct {
 	Right int
 }
 
-type Palette struct {
-	normalFG      Color
-	normalBG      Color
-	highlightFG   Color
-	highlightBG   Color
-	accent1FG     Color
-	accent1BG     Color
-	accent2FG     Color
-	accent2BG     Color
-	normalAttr    Attribute
-	highlightAttr Attribute
-	accent1Attr   Attribute
-	accent2Attr   Attribute
-}
-
-var (
-	defaultPalette = Palette{Black, Blue, Black, Yellow, Green, White,
-		Magenta, Cyan, AttrDefault, AttrDefault, AttrDefault, AttrDefault}
-	inheritAll = Palette{Inherit, Inherit, Inherit, Inherit, Inherit, Inherit,
-		Inherit, Inherit, AttrInherit, AttrInherit, AttrInherit, AttrInherit}
-	alternatePalette = Palette{Green, Black, Yellow, Black, Magenta, Cyan,
-		Black, White, AttrDefault, AttrDefault, AttrDefault, AttrDefault}
-)
-
 type TitledContainer struct {
 	Title           string
 	TitleVisibility bool
 	content         Displayable
-	Displayable
+	displayable
 }
 
 func (t TitledContainer) Content() Displayable {
@@ -119,7 +95,7 @@ func (t TitledContainer) DrawableArea() (x, y int, s Size) {
 
 type TextBox struct {
 	Text string
-	Displayable
+	displayable
 }
 
 func NewTextBox(text string) TextBox {

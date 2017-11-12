@@ -1,6 +1,7 @@
 package view
 
 import tb "github.com/nsf/termbox-go"
+import "github.com/teolandon/hanoi/view/colors"
 
 const (
 	hLine             = '\u2500'
@@ -11,9 +12,9 @@ const (
 	bottomRightCorner = '\u2518'
 )
 
-func drawOutline(area area, foregroundColor, backgroundColor Color) {
-	tbFG := foregroundColor.asTermAttr()
-	tbBG := backgroundColor.asTermAttr()
+func drawOutline(area area, foregroundColor, backgroundColor colors.Color) {
+	tbFG := foregroundColor.AsTermAttr()
+	tbBG := backgroundColor.AsTermAttr()
 
 	// Setting corners
 	tb.SetCell(area.x1, area.y1, topLeftCorner, tbFG, tbBG)
@@ -32,9 +33,9 @@ func drawOutline(area area, foregroundColor, backgroundColor Color) {
 	}
 }
 
-func paintArea(a area, fgColor, bgColor Color) {
-	fg := fgColor.asTermAttr()
-	bg := bgColor.asTermAttr()
+func paintArea(a area, fgColor, bgColor colors.Color) {
+	fg := fgColor.AsTermAttr()
+	bg := bgColor.AsTermAttr()
 	for i := a.x1; i < a.x2; i++ {
 		for j := a.y1; j < a.y2; j++ {
 			tb.SetCell(i, j, ' ', fg, bg)
@@ -43,8 +44,8 @@ func paintArea(a area, fgColor, bgColor Color) {
 	tb.Sync()
 }
 
-func printStr(s string, x, y int, foregroundColor, backgroundColor Color) {
-	printHelper(s, x, y, foregroundColor.asTermAttr(), backgroundColor.asTermAttr())
+func printStr(s string, x, y int, foregroundColor, backgroundColor colors.Color) {
+	printHelper(s, x, y, foregroundColor.AsTermAttr(), backgroundColor.AsTermAttr())
 	tb.Sync()
 }
 
