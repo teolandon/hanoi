@@ -20,6 +20,15 @@ const (
 	Inherit Color = Color(^uint16(0))
 )
 
+type Highlight uint8
+
+const (
+	Normal Highlight = iota
+	Highlighted
+	Accent1
+	Accent2
+)
+
 // Term Attributes that map to termbox-go attrs, but also support
 // inheriting and a default attribute. Should not be used directly
 // with termbox-go, but instead should obtain the correct termbox.Attribute
@@ -44,33 +53,43 @@ func (c Color) WithAttr(attr Attribute) tb.Attribute {
 }
 
 type Palette struct {
-	NormalFG      Color
-	NormalBG      Color
-	HighlightFG   Color
-	HighlightBG   Color
-	Accent1FG     Color
-	Accent1BG     Color
-	Accent2FG     Color
-	Accent2BG     Color
-	NormalAttr    Attribute
-	HighlightAttr Attribute
-	Accent1Attr   Attribute
-	Accent2Attr   Attribute
+	colors [8]Color
+	attrs  [4]Attribute
 }
 
 var (
-	DefaultPalette = Palette{Black, Blue, Black, Yellow, Green, White,
-		Magenta, Cyan, AttrDefault, AttrDefault, AttrDefault, AttrDefault}
-	InheritAll = Palette{Inherit, Inherit, Inherit, Inherit, Inherit, Inherit,
-		Inherit, Inherit, AttrInherit, AttrInherit, AttrInherit, AttrInherit}
-	AlternatePalette = Palette{Green, Black, Yellow, Black, Magenta, Cyan,
-		Black, White, AttrDefault, AttrDefault, AttrDefault, AttrDefault}
+	DefaultPalette = Palette{[8]Color{Black, Blue, Black, Yellow, Green, White,
+		Magenta, Cyan}, [4]Attribute{AttrDefault, AttrDefault, AttrDefault, AttrDefault}}
+	InheritAll = Palette{[8]Color{Inherit, Inherit, Inherit, Inherit, Inherit, Inherit,
+		Inherit, Inherit}, [4]Attribute{AttrInherit, AttrInherit, AttrInherit, AttrInherit}}
+	AlternatePalette = Palette{[8]Color{Green, Black, Yellow, Black, Magenta, Cyan,
+		Black, White}, [4]Attribute{AttrDefault, AttrDefault, AttrDefault, AttrDefault}}
 )
 
+func (p Palette) GetFGColor(t Highlight) Color {
+	return p.colors[2*t]
+}
+
+func (p Palette) GetBGColor(t Highlight) Color {
+	return p.colors[2*t+1]
+}
+
+func (p Palette) GetAttr(t Highlight) Attribute {
+	return p.attrs[t]
+}
+
+func (p Palette) GetFGTermAttr(t Highlight) tb.Attribute {
+	return p.GetFGColor(t).WithAttr(p.GetAttr(t))
+}
+
+func (p Palette) GetBGTermAttr(t Highlight) tb.Attribute {
+	return p.GetBGColor(t).AsTermAttr()
+}
+
 type Pixel struct {
-	Char  rune
-	Color Color
-	Attr  Attribute
+	Char      rune
+	Palette   Palette
+	Highlight Highlight
 }
 
 type PixelGrid [][]Pixel

@@ -3,7 +3,6 @@ package view
 import "errors"
 import "fmt"
 import tb "github.com/nsf/termbox-go"
-import "github.com/teolandon/hanoi/utils"
 import "github.com/teolandon/hanoi/view/colors"
 import "time"
 
@@ -37,64 +36,21 @@ func SetRoot(f Displayable) {
 	f.SetParent(main)
 }
 
-func drawTitledContainer(parentArea area, c TitledContainer) {
-	workingArea := getWorkArea(parentArea, c.Size(), c.Layout())
-	drawOutline(workingArea, c.Palette().NormalFG, c.Palette().NormalBG)
-	tbFG := c.Palette().NormalFG.AsTermAttr()
-	tbBG := c.Palette().NormalBG.AsTermAttr()
-
-	i := workingArea.x1 + 1
-	j := workingArea.y1 + 1
-	if c.TitleVisibility {
-		var ch rune
-		for ; i < workingArea.x2-1; i++ {
-			if i-workingArea.x1-1 < len(c.Title) {
-				ch = []rune(c.Title)[i-workingArea.x1-1]
-			} else {
-				ch = ' '
-			}
-			tb.SetCell(i, j, ch, tbFG, tbBG)
-			tb.SetCell(i, j+1, '=', tbFG, tbBG)
-		}
-		j += 2
-	}
-	for i = workingArea.x1 + 1; i < workingArea.x2-1; i++ {
-		for y := j; y < workingArea.y2-1; y++ {
-			tb.SetCell(i, y, ' ', tbFG, tbBG)
+func printGrid(grid colors.PixelGrid, x, y int) {
+	for i, line := range grid {
+		for j, pixel := range line {
+			fg := pixel.Palette.GetFGTermAttr(pixel.Highlight)
+			bg := pixel.Palette.GetBGTermAttr(pixel.Highlight)
+			tb.SetCell(x+j, y+i, pixel.Char, fg, bg)
 		}
 	}
-	childX, childY, s := c.DrawableArea()
-	drawDisplayable(newArea(childX+workingArea.x1, childY+workingArea.y1, s), c.Content())
 }
 
-func drawDisplayable(parentArea area, c interface{}) {
-	switch v := c.(type) {
-	case TextBox:
-		drawTextBox(parentArea, v)
-	case TitledContainer:
-		drawTitledContainer(parentArea, v)
-	case mainContainer:
-		drawDisplayable(terminalArea(), v.child)
-	case Button:
-		drawButton(parentArea, v)
-	default:
-		fmt.Printf("Type of c: %T\n", v)
-	}
-}
+func drawDisplayable(parentArea area, d Displayable) {
+	workArea := getWorkArea(parentArea, d.Size(), d.Layout())
+	grid := d.PixelGrid(workArea)
 
-func drawButton(parentArea area, b Button) {
-	workingArea := getWorkArea(parentArea, b.Size(), b.Layout())
-	paintArea(workingArea, b.Palette().NormalFG, b.Palette().NormalBG)
-	printStr(b.Text, workingArea.x1, workingArea.y1, b.Palette().NormalFG, b.Palette().NormalBG)
-}
-
-func drawTextBox(parentArea area, t TextBox) {
-	workingArea := getWorkArea(parentArea, t.Size(), t.Layout())
-	paintArea(parentArea, t.Palette().NormalFG, t.Palette().NormalBG)
-	wrapped := utils.WrapText(t.Text, workingArea.width(), workingArea.height())
-	for i, str := range wrapped {
-		printStr(str, workingArea.x1, workingArea.y1+i, t.Palette().NormalFG, t.Palette().NormalBG)
-	}
+	printGrid(grid, workArea.x1, workArea.y1)
 }
 
 // TODO: Handle areas larger than parent area, or in general outside it.
@@ -206,6 +162,10 @@ func Exit() {
 
 type mainContainer struct {
 	child Displayable
+}
+
+func (m mainContainer) PixelGrid(a area) colors.PixelGrid {
+	return m.child.PixelGrid(a)
 }
 
 func (mainContainer) HandleKey(e KeyEvent) {

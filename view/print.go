@@ -12,27 +12,6 @@ const (
 	bottomRightCorner = '\u2518'
 )
 
-func drawOutline(area area, foregroundColor, backgroundColor colors.Color) {
-	tbFG := foregroundColor.AsTermAttr()
-	tbBG := backgroundColor.AsTermAttr()
-
-	// Setting corners
-	tb.SetCell(area.x1, area.y1, topLeftCorner, tbFG, tbBG)
-	tb.SetCell(area.x2-1, area.y1, topRightCorner, tbFG, tbBG)
-	tb.SetCell(area.x1, area.y2-1, bottomLeftCorner, tbFG, tbBG)
-	tb.SetCell(area.x2-1, area.y2-1, bottomRightCorner, tbFG, tbBG)
-
-	// Drawing sides
-	for i := area.x1 + 1; i < area.x2-1; i++ {
-		tb.SetCell(i, area.y1, hLine, tbFG, tbBG)
-		tb.SetCell(i, area.y2-1, hLine, tbFG, tbBG)
-	}
-	for j := area.y1 + 1; j < area.y2-1; j++ {
-		tb.SetCell(area.x1, j, vLine, tbFG, tbBG)
-		tb.SetCell(area.x2-1, j, vLine, tbFG, tbBG)
-	}
-}
-
 func paintArea(a area, fgColor, bgColor colors.Color) {
 	fg := fgColor.AsTermAttr()
 	bg := bgColor.AsTermAttr()
