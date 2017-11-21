@@ -23,8 +23,20 @@ type KeyEvent struct {
 	consumed bool
 }
 
+func chainOfFocus(f Displayable) {
+	if f == nil {
+		fmt.Println("End of chain")
+		fmt.Println()
+		return
+	}
+
+	fmt.Println(f)
+	chainOfFocus(f.Parent())
+}
+
 func SetFocused(f Displayable) {
 	focused = f
+	chainOfFocus(f)
 	if initialized {
 		focusChange <- true
 		acceptInput(f)
@@ -86,8 +98,8 @@ func Init() error {
 		return err
 	}
 
-	tb.SetInputMode(tb.InputEsc)
-	tb.SetOutputMode(tb.OutputNormal)
+	// tb.SetInputMode(tb.InputEsc)
+	// tb.SetOutputMode(tb.OutputNormal)
 	tb.Clear(tb.ColorWhite, tb.ColorRed)
 
 	initialized = true
@@ -162,6 +174,10 @@ func Exit() {
 
 type mainContainer struct {
 	child Displayable
+}
+
+func (m mainContainer) String() string {
+	return "Main Controller"
 }
 
 func (m mainContainer) PixelGrid(a area) colors.PixelGrid {

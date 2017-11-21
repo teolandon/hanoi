@@ -1,5 +1,6 @@
 package view
 
+import "fmt"
 import "github.com/teolandon/hanoi/utils"
 import "github.com/teolandon/hanoi/view/colors"
 import "github.com/teolandon/hanoi/view/colors/pixelwriter"
@@ -72,6 +73,10 @@ type TitledContainer struct {
 	TitleVisibility bool
 	content         Displayable
 	displayable
+}
+
+func (t TitledContainer) String() string {
+	return fmt.Sprintf("Titled container with title %s", t.Title)
 }
 
 func (t TitledContainer) Content() Displayable {
@@ -155,10 +160,10 @@ func SimpleTitledContainer() TitledContainer {
 	return ret
 }
 
-func ButtonTitledContainer() TitledContainer {
+func ButtonTitledContainer() *TitledContainer {
 	ret := TitledContainer{"Test", true, nil, displayableWithSize(Size{20, 10})}
 	button := NewButton("OK")
 	ret.SetContent(&button)
 	ret.SetLayout(Centered)
-	return ret
+	return &ret
 }

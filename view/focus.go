@@ -13,11 +13,12 @@ type OkCancelDialog struct {
 	b         Button
 }
 
-func RequestFocus(f Displayable) {
-	SetFocused(f)
-}
-
 func executeEvent(event KeyEvent, f Displayable) {
+	fmt.Println("Executing handler on", f)
+	if f != nil {
+		fmt.Println("Its parent:", f.Parent())
+	}
+	fmt.Println()
 	if event.consumed || f == nil {
 		return
 	}
@@ -26,8 +27,9 @@ func executeEvent(event KeyEvent, f Displayable) {
 	if ok {
 		fmt.Println("Handling", handler)
 		handler.HandleKey(event)
+	} else {
+		fmt.Println("Not a handler,", handler)
 	}
-	fmt.Println("Executing handler on", f.Parent())
 
 	executeEvent(event, f.Parent())
 }
