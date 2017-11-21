@@ -1,9 +1,8 @@
 package view
 
 import "errors"
-import "fmt"
-import "log"
 import tb "github.com/nsf/termbox-go"
+import "github.com/teolandon/hanoi/utils/log"
 import "github.com/teolandon/hanoi/view/colors"
 import "time"
 
@@ -26,12 +25,11 @@ type KeyEvent struct {
 
 func chainOfFocus(f Displayable) {
 	if f == nil {
-		fmt.Println("End of chain")
-		fmt.Println()
+		log.Log("End of chain")
 		return
 	}
 
-	fmt.Println(f)
+	log.Log(f)
 	chainOfFocus(f.Parent())
 }
 
@@ -62,9 +60,8 @@ func printGrid(grid colors.PixelGrid, x, y int) {
 func drawDisplayable(parentArea area, d Displayable) {
 	workArea := getWorkArea(parentArea, d.Size(), d.Layout())
 
-	fmt.Println("Drawing:", d)
-	fmt.Println("Area:", workArea)
-	fmt.Println()
+	log.Log("Drawing:", d)
+	log.Log("Area:", workArea)
 
 	grid := d.PixelGrid(workArea)
 	printGrid(grid, workArea.x1, workArea.y1)
@@ -147,7 +144,7 @@ func pollEvents() {
 			case tb.EventKey:
 				eventChannel <- KeyEvent{ev, false}
 			default:
-				fmt.Println("Uncovered event:", ev)
+				log.Log("Uncovered event:", ev)
 				time.Sleep(10 * time.Millisecond)
 			}
 		case <-stopChannel:
@@ -235,8 +232,8 @@ func (mainContainer) SetParent(d Displayable) {}
 
 func terminalArea() area {
 	x, y := tb.Size()
-	fmt.Println("Terminal size:", x, y)
+	log.Log("Terminal size:", x, y)
 	ret := newArea(0, 0, Size{x, y})
-	fmt.Println("Terminal width:", ret.width())
+	log.Log("Terminal width:", ret.width())
 	return ret
 }

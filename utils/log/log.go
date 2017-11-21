@@ -18,6 +18,7 @@ var (
 func init() {
 	usr, err := user.Current()
 	if err != nil {
+		fmt.Println("Couldn't get user")
 		return
 	}
 
@@ -26,18 +27,24 @@ func init() {
 	filename := fmt.Sprintf("%4d-%2d-%2d_%2d-%2d-%2d.log", t.Year(), t.Month(), t.Day(),
 		t.Hour(), t.Minute(), t.Second())
 
-	f, err := os.Create(filepath.Join(usr.HomeDir, "logs", filename))
-	if err != nil {
+	err = os.Mkdir(filepath.Join(usr.HomeDir, "logs"), 0777)
+	if !os.IsExist(err) {
 		return
 	}
 
-	defer f.Close()
+	f, err := os.Create(filepath.Join(usr.HomeDir, "logs", filename))
+	if err != nil {
+		fmt.Println("Couldn't create file")
+		return
+	}
 
 	writer := bufio.NewWriter(f)
 	logger = log.New(writer, "", log.LstdFlags|log.Lshortfile)
 	enabled = true
 }
 
-func Log(s string) {
-	logger.Println(s)
+func Log(s ...interface{}) {
+	if enabled {
+		logger.Output(2, fmt.Sprintln(s))
+	}
 }

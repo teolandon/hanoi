@@ -1,7 +1,7 @@
 package view
 
 import (
-	"fmt"
+	"github.com/teolandon/hanoi/utils/log"
 )
 
 type KeyHandler interface {
@@ -14,21 +14,21 @@ type OkCancelDialog struct {
 }
 
 func executeEvent(event KeyEvent, f Displayable) {
-	fmt.Println("Executing handler on", f)
+	log.Log("Executing handler on", f)
 	if f != nil {
-		fmt.Println("Its parent:", f.Parent())
+		log.Log("Its parent:", f.Parent())
 	}
-	fmt.Println()
+	log.Log()
 	if event.consumed || f == nil {
 		return
 	}
 
 	handler, ok := f.(KeyHandler)
 	if ok {
-		fmt.Println("Handling", handler)
+		log.Log("Handling", handler)
 		handler.HandleKey(event)
 	} else {
-		fmt.Println("Not a handler,", handler)
+		log.Log("Not a handler,", handler)
 	}
 
 	executeEvent(event, f.Parent())
