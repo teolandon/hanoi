@@ -13,6 +13,10 @@ type Button struct {
 	displayable
 }
 
+func (b Button) String() string {
+	return "Button with text \"" + b.Text + "\""
+}
+
 func (b Button) PixelGrid(workingArea area) colors.PixelGrid {
 	ret := utils.NewPixelGrid(workingArea.width(), workingArea.height())
 

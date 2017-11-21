@@ -2,6 +2,7 @@ package view
 
 import "errors"
 import "fmt"
+import "log"
 import tb "github.com/nsf/termbox-go"
 import "github.com/teolandon/hanoi/view/colors"
 import "time"
@@ -60,8 +61,12 @@ func printGrid(grid colors.PixelGrid, x, y int) {
 
 func drawDisplayable(parentArea area, d Displayable) {
 	workArea := getWorkArea(parentArea, d.Size(), d.Layout())
-	grid := d.PixelGrid(workArea)
 
+	fmt.Println("Drawing:", d)
+	fmt.Println("Area:", workArea)
+	fmt.Println()
+
+	grid := d.PixelGrid(workArea)
 	printGrid(grid, workArea.x1, workArea.y1)
 }
 
@@ -177,7 +182,7 @@ type mainContainer struct {
 }
 
 func (m mainContainer) String() string {
-	return "Main Controller"
+	return "Main Container"
 }
 
 func (m mainContainer) PixelGrid(a area) colors.PixelGrid {
