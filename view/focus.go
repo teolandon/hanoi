@@ -25,7 +25,7 @@ func executeEvent(event KeyEvent, f Displayable) {
 
 	handler, ok := f.(KeyHandler)
 	if ok {
-		log.Log("Handling", handler)
+		log.Log("Handling", handler, "with key", string(event.event.Ch))
 		handler.HandleKey(event)
 	} else {
 		log.Log("Not a handler,", handler)

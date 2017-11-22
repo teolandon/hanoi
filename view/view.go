@@ -1,6 +1,7 @@
 package view
 
 import "errors"
+import fmt "fmt"
 import tb "github.com/nsf/termbox-go"
 import "github.com/teolandon/hanoi/utils/log"
 import "github.com/teolandon/hanoi/view/colors"
@@ -118,9 +119,10 @@ func Init() error {
 
 	go func() {
 		defer func() {
-			close(StoppedChannel)
 			initialized = false
+			log.Close()
 			tb.Close()
+			close(StoppedChannel)
 		}()
 		for {
 			tb.Sync()

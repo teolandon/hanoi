@@ -1,6 +1,7 @@
 package main
 
 import "github.com/teolandon/hanoi/view"
+import "github.com/teolandon/hanoi/utils/log"
 
 func testMe() {
 	container := view.ButtonTitledContainer()
@@ -18,5 +19,6 @@ func testMe() {
 }
 
 func main() {
+	log.Init()
 	testMe()
 }
