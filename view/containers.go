@@ -2,8 +2,8 @@ package view
 
 import "fmt"
 import "github.com/teolandon/hanoi/utils"
+import "github.com/teolandon/hanoi/pixel"
 import "github.com/teolandon/hanoi/view/colors"
-import "github.com/teolandon/hanoi/view/colors/pixelwriter"
 
 type Accent int8
 
@@ -88,28 +88,24 @@ func (t *TitledContainer) SetContent(c Displayable) {
 	c.SetParent(t)
 }
 
-func (t TitledContainer) PixelGrid(a area) colors.PixelGrid {
-	ret := utils.NewPixelGrid(a.width(), a.height())
-
-	pw := pixelwriter.New(t.Palette(), colors.Normal, ret)
+func (t TitledContainer) Draw() {
+	pw := pixel.NewWriter(t.Palette(), colors.Normal, t.grid)
 
 	pw.Write(0, 0, topLeftCorner)
-	for i := range ret[0] {
+	for i := range t.grid.GetLine(0) {
 		pw.Write(0, i, vLine)
 	}
-	pw.Write(0, len(ret[0])-1, topRightCorner)
+	pw.Write(0, t.grid.Height()-1, topRightCorner)
 	var i int
-	for i = 1; i < len(ret)-1; i++ {
+	for i = 1; i < t.grid.Height()-1; i++ {
 		pw.Write(i, 0, hLine)
-		pw.Write(i, len(ret[i])-1, hLine)
+		pw.Write(i, t.grid.Width()-1, hLine)
 	}
 	pw.Write(i, 0, bottomLeftCorner)
-	for j := range ret[0] {
+	for j := range t.grid.GetLine(0) {
 		pw.Write(i, j, vLine)
 	}
-	pw.Write(i, len(ret[i])-1, bottomRightCorner)
-
-	return ret
+	pw.Write(i, t.grid.Width()-1, bottomRightCorner)
 }
 
 func (t TitledContainer) DrawableArea() (x, y int, s Size) {
@@ -131,18 +127,14 @@ type TextBox struct {
 	displayable
 }
 
-func (t TextBox) PixelGrid(a area) colors.PixelGrid {
-	ret := utils.NewPixelGrid(a.width(), a.height())
-
-	pw := pixelwriter.New(t.Palette(), colors.Normal, ret)
+func (t TextBox) Draw() {
+	pw := pixel.NewWriter(t.Palette(), colors.Normal, t.grid)
 
 	// paintArea(parentArea, t.Palette().NormalFG, t.Palette().NormalBG)
-	wrapped := utils.WrapText(t.Text, a.width(), a.height())
+	wrapped := utils.WrapText(t.Text, t.grid.Width(), t.grid.Height())
 	for i, str := range wrapped {
-		pw.WriteStr(a.x1, a.y1+i, str)
+		pw.WriteStr(0, i, str)
 	}
-
-	return ret
 }
 
 func NewTextBox(text string) TextBox {

@@ -1,11 +1,11 @@
 package utils
 
-import "github.com/teolandon/hanoi/view/colors"
+import "github.com/teolandon/hanoi/pixel"
 
-func NewPixelGrid(width int, height int) [][]colors.Pixel {
-	ret := make([][]colors.Pixel, height)
+func SubGrid(grid [][]pixel.Pixel, x1, x2, y1, y2 int) [][]pixel.Pixel {
+	ret := grid[y1:y2]
 	for i := range ret {
-		ret[i] = make([]colors.Pixel, width)
+		ret[i] = ret[i][x1:x2]
 	}
 	return ret
 }

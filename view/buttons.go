@@ -1,9 +1,7 @@
 package view
 
 import tb "github.com/nsf/termbox-go"
-import "github.com/teolandon/hanoi/utils"
 import "github.com/teolandon/hanoi/view/colors"
-import "github.com/teolandon/hanoi/view/colors/pixelwriter"
 
 // Button is a UI component that has a text label,
 // and performs an action when hit (using enter)
@@ -17,18 +15,8 @@ func (b Button) String() string {
 	return "Button with text \"" + b.Text + "\""
 }
 
-func (b Button) PixelGrid(workingArea area) colors.PixelGrid {
-	ret := utils.NewPixelGrid(workingArea.width(), workingArea.height())
-
-	pw := pixelwriter.New(b.Palette(), colors.Normal, ret)
-
-	y := (workingArea.height() / 2)
-
-	startX := utils.IntMax(0, (workingArea.width()-utils.StrLength(b.Text))/2)
-
-	pw.WriteStr(startX, y, b.Text)
-
-	return colors.PixelGrid(ret)
+func (b Button) Draw() {
+	// STUB
 }
 
 func (b Button) HandleKey(e KeyEvent) {

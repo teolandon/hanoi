@@ -85,11 +85,3 @@ func (p Palette) GetFGTermAttr(t Highlight) tb.Attribute {
 func (p Palette) GetBGTermAttr(t Highlight) tb.Attribute {
 	return p.GetBGColor(t).AsTermAttr()
 }
-
-type Pixel struct {
-	Char      rune
-	Palette   Palette
-	Highlight Highlight
-}
-
-type PixelGrid [][]Pixel

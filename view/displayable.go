@@ -1,6 +1,7 @@
 package view
 
 import "github.com/teolandon/hanoi/view/colors"
+import "github.com/teolandon/hanoi/pixel"
 
 type Displayable interface {
 	Padding() Padding
@@ -13,7 +14,8 @@ type Displayable interface {
 	SetLayout(p Layout)
 	Parent() Displayable
 	SetParent(p Displayable)
-	PixelGrid(workingArea area) colors.PixelGrid
+	Draw()
+	setGrid(grid pixel.PixelGrid)
 }
 
 type Parent interface {
@@ -26,6 +28,7 @@ type displayable struct {
 	palette colors.Palette
 	layout  Layout
 	parent  Displayable
+	grid    pixel.PixelGrid
 }
 
 func (d displayable) Padding() Padding {
@@ -68,12 +71,16 @@ func (d *displayable) SetParent(dis Displayable) {
 	d.parent = dis
 }
 
+func (d *displayable) setGrid(g pixel.PixelGrid) {
+	d.grid = g
+}
+
 func defaultDisplayable() displayable {
-	ret := displayable{*new(Padding), *new(Size), colors.DefaultPalette, Centered, nil}
+	ret := displayable{*new(Padding), *new(Size), colors.DefaultPalette, Centered, nil, *new(pixel.PixelGrid)}
 	return ret
 }
 
 func displayableWithSize(size Size) displayable {
-	ret := displayable{*new(Padding), size, colors.DefaultPalette, Centered, nil}
+	ret := displayable{*new(Padding), size, colors.DefaultPalette, Centered, nil, *new(pixel.PixelGrid)}
 	return ret
 }

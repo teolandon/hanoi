@@ -1,10 +1,10 @@
 package view
 
 import "errors"
-import fmt "fmt"
 import tb "github.com/nsf/termbox-go"
 import "github.com/teolandon/hanoi/utils/log"
 import "github.com/teolandon/hanoi/view/colors"
+import "github.com/teolandon/hanoi/pixel"
 import "time"
 
 var (
@@ -48,14 +48,25 @@ func SetRoot(f Displayable) {
 	f.SetParent(main)
 }
 
-func printGrid(grid colors.PixelGrid, x, y int) {
-	for i, line := range grid {
+func printGrid(grid pixel.PixelGrid, x, y int) {
+	for i := 0; i < grid.Height(); i++ {
+		line := grid.GetLine(i)
 		for j, pixel := range line {
 			fg := pixel.Palette.GetFGTermAttr(pixel.Highlight)
 			bg := pixel.Palette.GetBGTermAttr(pixel.Highlight)
-			tb.SetCell(x+j, y+i, pixel.Char, fg, bg)
+			tb.SetCell(x+j, y+i, pixel.Ch, fg, bg)
 		}
 	}
+}
+
+func calculateGrids() {
+	calculateGridsH(main, 0, 0)
+}
+
+func calculateGridsH(d Displayable, x, y int) {
+	// STUB
+	// grid := utils.NewPixelGrid(d.Size.x, d.Size.y)
+	// d.SetGrid()
 }
 
 func drawDisplayable(parentArea area, d Displayable) {
@@ -64,8 +75,8 @@ func drawDisplayable(parentArea area, d Displayable) {
 	log.Log("Drawing:", d)
 	log.Log("Area:", workArea)
 
-	grid := d.PixelGrid(workArea)
-	printGrid(grid, workArea.x1, workArea.y1)
+	// grid := d.FillPixelGrid(workArea)
+	// printGrid(grid, workArea.x1, workArea.y1)
 }
 
 // TODO: Handle areas larger than parent area, or in general outside it.
@@ -184,8 +195,8 @@ func (m mainContainer) String() string {
 	return "Main Container"
 }
 
-func (m mainContainer) PixelGrid(a area) colors.PixelGrid {
-	return m.child.PixelGrid(a)
+func (m mainContainer) Draw() {
+	m.child.Draw()
 }
 
 func (mainContainer) HandleKey(e KeyEvent) {
@@ -231,6 +242,8 @@ func (mainContainer) Parent() Displayable {
 }
 
 func (mainContainer) SetParent(d Displayable) {}
+
+func (mainContainer) setGrid(g pixel.PixelGrid) {}
 
 func terminalArea() area {
 	x, y := tb.Size()
