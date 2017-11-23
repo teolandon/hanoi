@@ -30,7 +30,7 @@ func Init() {
 
 	t := time.Now()
 
-	filename := fmt.Sprintf("%04d-%02d-%02d_%02d-%02d-%02d.log",
+	filename := fmt.Sprintf("hanoi_%04d-%02d-%02d_%02d-%02d-%02d.log",
 		t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
 
 	err = os.Mkdir(filepath.Join(usr.HomeDir, "logs"), 0777)
