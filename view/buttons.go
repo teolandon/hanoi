@@ -1,6 +1,7 @@
 package view
 
 import tb "github.com/nsf/termbox-go"
+import "github.com/teolandon/hanoi/areas"
 import "github.com/teolandon/hanoi/view/colors"
 
 // Button is a UI component that has a text label,
@@ -26,15 +27,15 @@ func (b Button) HandleKey(e KeyEvent) {
 	}
 }
 
-func (b Button) Size() Size {
+func (b Button) Size() areas.Size {
 	orig := b.displayable.Size()
-	return Size{orig.Width, 1}
+	return areas.NewSize(orig.Width(), 1)
 }
 
 func NewButton(text string) Button {
 	ret := Button{text, func() {}, defaultDisplayable()}
 	ret.SetPalette(colors.AlternatePalette)
-	ret.SetSize(Size{5, 1})
+	ret.SetSize(areas.NewSize(5, 1))
 	return ret
 }
 

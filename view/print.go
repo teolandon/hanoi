@@ -2,6 +2,7 @@ package view
 
 import tb "github.com/nsf/termbox-go"
 import "github.com/teolandon/hanoi/view/colors"
+import "github.com/teolandon/hanoi/areas"
 
 const (
 	hLine             = '\u2500'
@@ -12,11 +13,11 @@ const (
 	bottomRightCorner = '\u2518'
 )
 
-func paintArea(a area, fgColor, bgColor colors.Color) {
+func paintArea(a areas.Area, fgColor, bgColor colors.Color) {
 	fg := fgColor.AsTermAttr()
 	bg := bgColor.AsTermAttr()
-	for i := a.x1; i < a.x2; i++ {
-		for j := a.y1; j < a.y2; j++ {
+	for i := a.X1(); i < a.X2(); i++ {
+		for j := a.Y1(); j < a.Y2(); j++ {
 			tb.SetCell(i, j, ' ', fg, bg)
 		}
 	}

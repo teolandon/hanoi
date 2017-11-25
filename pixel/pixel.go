@@ -2,6 +2,7 @@ package pixel
 
 import "fmt"
 import "github.com/teolandon/hanoi/view/colors"
+import "github.com/teolandon/hanoi/areas"
 
 type Pixel struct {
 	Ch        rune
@@ -58,6 +59,10 @@ func (p PixelGrid) SubGrid(x1, x2, y1, y2 int) PixelGrid {
 	}
 
 	return PixelGrid{x2 - x1, y2 - y1, sub}
+}
+
+func (p PixelGrid) SubGridFromArea(a areas.Area) PixelGrid {
+	return p.SubGrid(a.X1(), a.X2(), a.Y1(), a.Y2())
 }
 
 func (p PixelGrid) Check() bool {

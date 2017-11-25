@@ -1,11 +1,12 @@
 package view
 
 import "errors"
+import "fmt"
+import "time"
 import tb "github.com/nsf/termbox-go"
 import "github.com/teolandon/hanoi/utils/log"
-import "github.com/teolandon/hanoi/view/colors"
 import "github.com/teolandon/hanoi/pixel"
-import "time"
+import "github.com/teolandon/hanoi/areas"
 
 var (
 	initialized = false
@@ -17,6 +18,7 @@ var (
 	StoppedChannel chan bool
 	eventChannel   = make(chan KeyEvent)
 	main           mainContainer
+	termGrid       pixel.PixelGrid
 )
 
 type KeyEvent struct {
@@ -69,34 +71,35 @@ func calculateGridsH(d Displayable, x, y int) {
 	// d.SetGrid()
 }
 
-func drawDisplayable(parentArea area, d Displayable) {
-	workArea := getWorkArea(parentArea, d.Size(), d.Layout())
+func getContentGrid(workingArea areas.Area, d Displayable) pixel.PixelGrid {
+	var width, height, x, y int
+	switch d.Layout() {
+	case FitToParent:
+		width = workingArea.Width()
+		height = workingArea.Height()
+		x = workingArea.X1()
+		y = workingArea.Y1()
+	case Centered:
+		width = d.Size().Width()
+		height = d.Size().Height()
+		x = workingArea.X1() + (workingArea.Width()-width)/2
+		y = workingArea.Y1() + (workingArea.Height()-height)/2
+	default:
+		panic(fmt.Sprintf("Invalid layout for displayable ", d))
+	}
 
-	log.Log("Drawing:", d)
-	log.Log("Area:", workArea)
+	area := areas.New(x, x+width, y, y+height)
+	return termGrid.SubGridFromArea(area)
+}
+
+func drawDisplayable(parentArea areas.Area, d Displayable) {
+	// workArea := getWorkArea(parentArea, d.Size(), d.Layout())
+
+	// log.Log("Drawing:", d)
+	// log.Log("Area:", workArea)
 
 	// grid := d.FillPixelGrid(workArea)
 	// printGrid(grid, workArea.x1, workArea.y1)
-}
-
-// TODO: Handle areas larger than parent area, or in general outside it.
-func getWorkArea(parentArea area, contentSize Size, layout Layout) area {
-	var width, height, x, y int
-	switch layout {
-	case FitToParent:
-		width = parentArea.width()
-		height = parentArea.height()
-		x = parentArea.x1
-		y = parentArea.y1
-	case Centered:
-		width = contentSize.Width
-		height = contentSize.Height
-		x = parentArea.x1 + (parentArea.width()-width)/2
-		y = parentArea.y1 + (parentArea.height()-height)/2
-	default:
-		panic("nooo")
-	}
-	return newArea(x, y, Size{width, height})
 }
 
 func Init() error {
@@ -119,6 +122,10 @@ func Init() error {
 	initialized = true
 	StoppedChannel = make(chan bool)
 	stopChannel = make(chan bool)
+
+	termSize := terminalSize()
+	termGrid = pixel.NewGrid(termSize.Width(), termSize.Height())
+
 	tb.Flush()
 	tb.HideCursor()
 
@@ -187,68 +194,13 @@ func Exit() {
 	close(stopChannel)
 }
 
-type mainContainer struct {
-	child Displayable
-}
-
-func (m mainContainer) String() string {
-	return "Main Container"
-}
-
-func (m mainContainer) Draw() {
-	m.child.Draw()
-}
-
-func (mainContainer) HandleKey(e KeyEvent) {
-	if e.event.Ch == 'q' {
-		Exit()
-		e.consumed = true
-	}
-}
-
-func (m mainContainer) Children() []Displayable {
-	ret := make([]Displayable, 1)
-	ret[0] = m.child
-	return ret
-}
-
-func (mainContainer) Padding() Padding {
-	return Padding{0, 0, 0, 0}
-}
-
-func (mainContainer) SetPadding(p Padding) {}
-
-func (mainContainer) Size() Size {
+func terminalSize() areas.Size {
 	x, y := tb.Size()
-	return Size{x, y}
+	return areas.NewSize(x, y)
 }
 
-func (mainContainer) SetSize(s Size) {}
-
-func (mainContainer) Palette() colors.Palette {
-	return colors.DefaultPalette
-}
-
-func (mainContainer) SetPalette(p colors.Palette) {}
-
-func (mainContainer) Layout() Layout {
-	return FitToParent
-}
-
-func (mainContainer) SetLayout(l Layout) {}
-
-func (mainContainer) Parent() Displayable {
-	return nil
-}
-
-func (mainContainer) SetParent(d Displayable) {}
-
-func (mainContainer) setGrid(g pixel.PixelGrid) {}
-
-func terminalArea() area {
+func terminalArea() areas.Area {
 	x, y := tb.Size()
-	log.Log("Terminal size:", x, y)
-	ret := newArea(0, 0, Size{x, y})
-	log.Log("Terminal width:", ret.width())
+	ret := areas.NewFromSize(0, 0, areas.NewSize(x, y))
 	return ret
 }
