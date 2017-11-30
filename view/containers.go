@@ -4,6 +4,7 @@ import "fmt"
 import "github.com/teolandon/hanoi/utils"
 import "github.com/teolandon/hanoi/pixel"
 import "github.com/teolandon/hanoi/areas"
+import _ "github.com/teolandon/hanoi/utils/log"
 import "github.com/teolandon/hanoi/view/colors"
 
 type Accent int8
@@ -38,13 +39,6 @@ const (
 	Centered
 )
 
-type Padding struct {
-	Up    int
-	Down  int
-	Left  int
-	Right int
-}
-
 type TitledContainer struct {
 	Title           string
 	TitleVisibility bool
@@ -52,19 +46,17 @@ type TitledContainer struct {
 }
 
 func (t *TitledContainer) setGrid(g pixel.PixelGrid) {
-	t.container.setGrid(g, t.ContentArea())
+	t.container.setGrid(g, t.ContentPadding())
 }
 
-func (t TitledContainer) ContentArea() areas.Area {
+func (t TitledContainer) ContentPadding() areas.Padding {
 	pad := 0
+
 	if t.TitleVisibility {
 		pad = 2
 	}
 
-	yEnd := t.RealSize().Height() - 1
-	xEnd := t.RealSize().Width() - 1
-
-	return areas.New(1, xEnd, 1+pad, yEnd)
+	return areas.Padding{1, 1, 1 + pad, 1}
 }
 
 func (t TitledContainer) String() string {

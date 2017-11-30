@@ -8,6 +8,12 @@ func testMe() {
 	view.SetRoot(container)
 	view.SetFocused(container.Content())
 
+	sl := make([]int, 5)
+
+	_ = sl[0:3]
+
+	_ = sl[0:5]
+
 	err := view.Init()
 	if err != nil {
 		return

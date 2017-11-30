@@ -55,3 +55,10 @@ func New(x1, x2, y1, y2 int) Area {
 func NewFromSize(x, y int, size Size) Area {
 	return Area{x, x + size.Width(), y, y + size.Height()}
 }
+
+type Padding struct {
+	Up    int
+	Down  int
+	Left  int
+	Right int
+}

@@ -30,11 +30,11 @@ func (m mainContainer) Children() []Displayable {
 	return ret
 }
 
-func (mainContainer) Padding() Padding {
-	return Padding{0, 0, 0, 0}
+func (mainContainer) Padding() areas.Padding {
+	return areas.Padding{0, 0, 0, 0}
 }
 
-func (mainContainer) SetPadding(p Padding) {}
+func (mainContainer) SetPadding(p areas.Padding) {}
 
 func (mainContainer) Size() areas.Size {
 	x, y := tb.Size()
@@ -67,3 +67,16 @@ func (mainContainer) Parent() Displayable {
 func (mainContainer) SetParent(d Displayable) {}
 
 func (mainContainer) setGrid(g pixel.PixelGrid) {}
+
+func (m mainContainer) Content() Displayable {
+	return m.child
+}
+
+func (m mainContainer) SetContent(d Displayable) {
+	m.child = d
+	d.SetParent(m)
+}
+
+func (m mainContainer) ContentPadding() areas.Padding {
+	return areas.Padding{0, 0, 0, 0}
+}

@@ -1,7 +1,6 @@
 package log
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -14,7 +13,6 @@ var (
 	enabled bool = false
 	f       *os.File
 	logger  *log.Logger
-	writer  *bufio.Writer
 )
 
 func Init() {
@@ -44,8 +42,7 @@ func Init() {
 		return
 	}
 
-	writer = bufio.NewWriter(f)
-	logger = log.New(writer, "", log.LstdFlags)
+	logger = log.New(f, "", log.LstdFlags|log.Lshortfile)
 	enabled = true
 }
 
@@ -58,6 +55,5 @@ func Log(s ...interface{}) {
 
 func Close() {
 	enabled = false
-	writer.Flush()
 	f.Close()
 }

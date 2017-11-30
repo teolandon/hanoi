@@ -62,13 +62,36 @@ func printGrid(grid pixel.PixelGrid, x, y int) {
 }
 
 func calculateGrids() {
-	calculateGridsH(main, 0, 0)
+	calculateGridsH(main, termGrid)
 }
 
-func calculateGridsH(d Displayable, x, y int) {
-	// STUB
-	// grid := utils.NewPixelGrid(d.Size.x, d.Size.y)
-	// d.SetGrid()
+func calculateGridsH(d Displayable, grid pixel.PixelGrid) {
+	if d == nil {
+		return
+	}
+
+	d.setGrid(grid)
+	log.Log("Set grid for", d, "to", grid)
+	parent, ok := d.(Container)
+	if !ok {
+		return
+	}
+
+	contentPadding := parent.ContentPadding()
+	contentGrid := grid.Padded(contentPadding)
+	calculateGridsH(parent.Content(), contentGrid)
+}
+
+func drawView() {
+	drawDisplayable(main)
+}
+
+func drawDisplayable(d Displayable) {
+	d.Draw()
+	parent, ok := d.(Container)
+	if ok {
+		drawDisplayable(parent.Content())
+	}
 }
 
 func getContentGrid(workingArea areas.Area, d Displayable) pixel.PixelGrid {
@@ -92,16 +115,6 @@ func getContentGrid(workingArea areas.Area, d Displayable) pixel.PixelGrid {
 	return termGrid.SubGridFromArea(area)
 }
 
-func drawDisplayable(parentArea areas.Area, d Displayable) {
-	// workArea := getWorkArea(parentArea, d.Size(), d.Layout())
-
-	// log.Log("Drawing:", d)
-	// log.Log("Area:", workArea)
-
-	// grid := d.FillPixelGrid(workArea)
-	// printGrid(grid, workArea.x1, workArea.y1)
-}
-
 func Init() error {
 	if tb.IsInit {
 		return errors.New("Termbox has already been initialized.")
@@ -115,8 +128,8 @@ func Init() error {
 		return err
 	}
 
-	// tb.SetInputMode(tb.InputEsc)
-	// tb.SetOutputMode(tb.OutputNormal)
+	tb.SetInputMode(tb.InputEsc)
+	tb.SetOutputMode(tb.OutputNormal)
 	tb.Clear(tb.ColorWhite, tb.ColorRed)
 
 	initialized = true
@@ -131,7 +144,8 @@ func Init() error {
 
 	acceptInput(focused)
 
-	drawDisplayable(terminalArea(), main)
+	calculateGrids()
+	drawView()
 
 	go pollEvents()
 

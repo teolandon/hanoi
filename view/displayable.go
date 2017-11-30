@@ -2,11 +2,12 @@ package view
 
 import "github.com/teolandon/hanoi/pixel"
 import "github.com/teolandon/hanoi/areas"
+import _ "github.com/teolandon/hanoi/utils/log"
 import "github.com/teolandon/hanoi/view/colors"
 
 type Displayable interface {
-	Padding() Padding
-	SetPadding(p Padding)
+	Padding() areas.Padding
+	SetPadding(p areas.Padding)
 	Size() areas.Size
 	RealSize() areas.Size
 	SetSize(s areas.Size)
@@ -25,7 +26,7 @@ type Parent interface {
 }
 
 type displayable struct {
-	padding Padding
+	padding areas.Padding
 	size    areas.Size
 	palette colors.Palette
 	layout  Layout
@@ -33,11 +34,11 @@ type displayable struct {
 	grid    pixel.PixelGrid
 }
 
-func (d displayable) Padding() Padding {
+func (d displayable) Padding() areas.Padding {
 	return d.padding
 }
 
-func (d *displayable) SetPadding(p Padding) {
+func (d *displayable) SetPadding(p areas.Padding) {
 	d.padding = p
 }
 
@@ -82,19 +83,19 @@ func (d *displayable) setGrid(g pixel.PixelGrid) {
 }
 
 func defaultDisplayable() displayable {
-	ret := displayable{*new(Padding), *new(areas.Size), colors.DefaultPalette, Centered, nil, *new(pixel.PixelGrid)}
+	ret := displayable{*new(areas.Padding), *new(areas.Size), colors.DefaultPalette, Centered, nil, *new(pixel.PixelGrid)}
 	return ret
 }
 
 func displayableWithSize(size areas.Size) displayable {
-	ret := displayable{*new(Padding), size, colors.DefaultPalette, Centered, nil, *new(pixel.PixelGrid)}
+	ret := displayable{*new(areas.Padding), size, colors.DefaultPalette, Centered, nil, *new(pixel.PixelGrid)}
 	return ret
 }
 
 type Container interface {
 	Content() Displayable
 	SetContent(d Displayable)
-	ContentArea() areas.Area
+	ContentPadding() areas.Padding
 }
 
 type container struct {
@@ -110,7 +111,7 @@ func (c *container) SetContent(d Displayable) {
 	c.content = d
 }
 
-func (c *container) setGrid(g pixel.PixelGrid, contentArea areas.Area) {
+func (c *container) setGrid(g pixel.PixelGrid, contentPadding areas.Padding) {
 	c.displayable.setGrid(g)
-	c.content.setGrid(g.SubGrid(contentArea.X1(), contentArea.X2(), contentArea.Y1(), contentArea.Y2()))
+	c.content.setGrid(g.Padded(contentPadding))
 }
