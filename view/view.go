@@ -87,9 +87,11 @@ func drawView() {
 }
 
 func drawDisplayable(d Displayable) {
+	log.Log("Drawing displayable", d)
 	d.Draw()
 	parent, ok := d.(Container)
 	if ok {
+		log.Log("Displayable", d, "is parent, drawing child")
 		drawDisplayable(parent.Content())
 	}
 }
@@ -146,6 +148,7 @@ func Init() error {
 
 	calculateGrids()
 	drawView()
+	printGrid(termGrid, 0, 0)
 
 	go pollEvents()
 

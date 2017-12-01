@@ -13,9 +13,7 @@ func (m mainContainer) String() string {
 	return "Main Container"
 }
 
-func (m mainContainer) Draw() {
-	m.child.Draw()
-}
+func (m mainContainer) Draw() {}
 
 func (mainContainer) HandleKey(e KeyEvent) {
 	if e.event.Ch == 'q' {
