@@ -18,7 +18,7 @@ var (
 	StoppedChannel chan bool
 	eventChannel   = make(chan KeyEvent)
 	main           mainContainer
-	termGrid       pixel.PixelGrid
+	termGrid       pixel.SquareGrid
 )
 
 type KeyEvent struct {
@@ -50,7 +50,7 @@ func SetRoot(f Displayable) {
 	f.SetParent(main)
 }
 
-func printGrid(grid pixel.PixelGrid, x, y int) {
+func printGrid(grid pixel.SubGrid, x, y int) {
 	for i := 0; i < grid.Height(); i++ {
 		line := grid.GetLine(i)
 		for j, pixel := range line {
@@ -62,10 +62,10 @@ func printGrid(grid pixel.PixelGrid, x, y int) {
 }
 
 func calculateGrids() {
-	calculateGridsH(main, termGrid)
+	calculateGridsH(main, termGrid.TotalSubGrid())
 }
 
-func calculateGridsH(d Displayable, grid pixel.PixelGrid) {
+func calculateGridsH(d Displayable, grid pixel.SubGrid) {
 	if d == nil {
 		return
 	}
@@ -96,7 +96,7 @@ func drawDisplayable(d Displayable) {
 	}
 }
 
-func getContentGrid(workingArea areas.Area, d Displayable) pixel.PixelGrid {
+func getContentGrid(workingArea areas.Area, d Displayable) pixel.SubGrid {
 	var width, height, x, y int
 	switch d.Layout() {
 	case FitToParent:
@@ -114,7 +114,7 @@ func getContentGrid(workingArea areas.Area, d Displayable) pixel.PixelGrid {
 	}
 
 	area := areas.New(x, x+width, y, y+height)
-	return termGrid.SubGridFromArea(area)
+	return termGrid.SubGrid(area)
 }
 
 func Init() error {
@@ -148,7 +148,7 @@ func Init() error {
 
 	calculateGrids()
 	drawView()
-	printGrid(termGrid, 0, 0)
+	printGrid(termGrid.TotalSubGrid(), 0, 0)
 
 	go pollEvents()
 

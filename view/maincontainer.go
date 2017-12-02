@@ -64,7 +64,7 @@ func (mainContainer) Parent() Displayable {
 
 func (mainContainer) SetParent(d Displayable) {}
 
-func (mainContainer) setGrid(g pixel.PixelGrid) {}
+func (mainContainer) setGrid(g pixel.SubGrid) {}
 
 func (m mainContainer) Content() Displayable {
 	return m.child

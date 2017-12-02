@@ -45,7 +45,7 @@ type TitledContainer struct {
 	container
 }
 
-func (t *TitledContainer) setGrid(g pixel.PixelGrid) {
+func (t *TitledContainer) setGrid(g pixel.SubGrid) {
 	t.container.setGrid(g, t.ContentPadding())
 }
 

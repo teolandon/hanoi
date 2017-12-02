@@ -1,6 +1,7 @@
 package pixel
 
 import "fmt"
+import "errors"
 import "github.com/teolandon/hanoi/areas"
 import "github.com/teolandon/hanoi/utils/log"
 import "github.com/teolandon/hanoi/view/colors"
@@ -11,21 +12,10 @@ type Pixel struct {
 	Highlight colors.Highlight
 }
 
-type PixelGrid struct {
+type SquareGrid struct {
 	width  int
 	height int
 	grid   [][]Pixel
-}
-
-func NewGrid(w, h int) PixelGrid {
-	grid := plainGrid(w, h)
-	ret := PixelGrid{w, h, grid}
-
-	return ret
-}
-
-func (p PixelGrid) String() string {
-	return fmt.Sprintf("[Grid of height %d, width %d]", p.height, p.width)
 }
 
 func plainGrid(width int, height int) [][]Pixel {
@@ -37,73 +27,118 @@ func plainGrid(width int, height int) [][]Pixel {
 	return ret
 }
 
-func (p PixelGrid) Height() int {
+func NewGrid(width, height int) SquareGrid {
+	return SquareGrid{width, height, plainGrid(width, height)}
+}
+
+func (p SquareGrid) Height() int {
 	return p.height
 }
 
-func (p PixelGrid) Width() int {
+func (p SquareGrid) Width() int {
 	return p.width
 }
 
-func (p PixelGrid) GetLine(y int) []Pixel {
+func (p SquareGrid) GetLine(y int) []Pixel {
 	log.Log("Returning line from pixel grid. Grid height:", len(p.grid))
+	if y >= p.Height() || y < 0 {
+		return nil
+	}
+
 	return p.grid[y]
 }
 
-func (p PixelGrid) Get(x, y int) Pixel {
+func (p SquareGrid) Get(x, y int) Pixel {
+	if x >= p.Width() || x < 0 {
+		return *new(Pixel)
+	}
+	if y >= p.Height() || y < 0 {
+		return *new(Pixel)
+	}
+
 	return p.grid[y][x]
 }
 
-func (pg PixelGrid) Set(x, y int, p Pixel) {
+func (pg SquareGrid) Set(x, y int, p Pixel) {
+	if x >= pg.Width() || x < 0 {
+		return
+	}
+	if y >= pg.Height() || y < 0 {
+		return
+	}
+
 	pg.grid[y][x] = p
 }
 
-func (p PixelGrid) SubGrid(x1, x2, y1, y2 int) PixelGrid {
-	if !p.Check() {
-		panic("badbadbad")
-	}
-	sub := make([][]Pixel, y2-y1)
-	copy(sub, p.grid[y1:y2]) // Essential, so as to not modify the original length
-	for i := range sub {
-		sub[i] = sub[i][x1:x2]
-	}
-
-	return PixelGrid{x2 - x1, y2 - y1, sub}
+func (p SquareGrid) SubGrid(area areas.Area) SubGrid {
+	return SubGrid{area, p}
 }
 
-func (p PixelGrid) SubGridFromArea(a areas.Area) PixelGrid {
-	return p.SubGrid(a.X1(), a.X2(), a.Y1(), a.Y2())
+func (p SquareGrid) TotalSubGrid() SubGrid {
+	return p.SubGrid(areas.New(0, p.Width(), 0, p.Height()))
 }
 
-func (p PixelGrid) Padded(pad areas.Padding) PixelGrid {
-	width := p.Width()
-	height := p.Height()
-	return p.SubGrid(pad.Left, width-pad.Right, pad.Up, height-pad.Down)
+type SubGrid struct {
+	area areas.Area
+	grid SquareGrid
 }
 
-func (p PixelGrid) Check() bool {
-	if len(p.grid) != p.height {
-		log.Log("Height mismatched")
-		return false
+func (p SubGrid) String() string {
+	return fmt.Sprintf("[Subgrid of area %v]", p.area)
+}
+
+func (p SubGrid) SubGrid(a areas.Area) SubGrid {
+	return SubGrid{p.area.SubArea(a), p.grid}
+}
+
+func (p SubGrid) Padded(pad areas.Padding) SubGrid {
+	return p.SubGrid(p.area.Padded(pad))
+}
+
+func (p SubGrid) Width() int {
+	return p.area.Width()
+}
+
+func (p SubGrid) Height() int {
+	return p.area.Height()
+}
+
+func (p SubGrid) Get(x, y int) (pixel Pixel, err error) {
+	gx := x + p.area.X1()
+	gy := y + p.area.Y1()
+
+	return p.grid.Get(gx, gy), nil
+}
+
+func (p SubGrid) GetLine(y int) []Pixel {
+	gy := y + p.area.Y1()
+	ret := p.grid.GetLine(gy)
+	return ret
+}
+
+func (p SubGrid) Set(x, y int, pixel Pixel) error {
+	if x >= p.Width() || x < 0 {
+		return errors.New("X out of bounds")
+	}
+	if y >= p.Height() || y < 0 {
+		return errors.New("Y out of bounds")
 	}
 
-	for i := range p.grid {
-		if len(p.grid[i]) != p.width {
-			log.Log("Some width mismatched", len(p.grid[i]), "instead of", p.width, "at", i)
-			return false
-		}
-	}
+	gx := x + p.area.X1()
+	gy := y + p.area.Y1()
 
-	return true
+	p.grid.Set(gx, gy, pixel)
+
+	return nil
 }
 
 type PixelWriter struct {
 	defaultPalette   colors.Palette
 	defaultHighlight colors.Highlight
-	grid             PixelGrid
+	grid             SubGrid
 }
 
-func NewWriter(dP colors.Palette, dH colors.Highlight, grid PixelGrid) PixelWriter {
+func NewWriter(dP colors.Palette, dH colors.Highlight, grid SubGrid) PixelWriter {
 	return PixelWriter{dP, dH, grid}
 }
 
@@ -114,17 +149,17 @@ func (p PixelWriter) Write(x, y int, r rune) error {
 func (p PixelWriter) WriteWithHighlight(x, y int, r rune, hi colors.Highlight) error {
 	grid := p.grid.grid
 
-	if y >= len(grid) {
+	if y >= grid.Height() {
 		return fmt.Errorf("y-value out of bounds for PixelWriter %v's grid:\ny=%v,"+
-			"len(grid)=%v", p, y, len(grid))
+			"len(grid)=%v", p, y, grid.Height())
 	}
 
-	if x >= len(grid[y]) {
+	if x >= grid.Width() {
 		return fmt.Errorf("x-value out of bounds for PixelWriter %v's grid:\nx=%v,"+
-			"len(grid[%v])=%v", p, y, x, len(grid))
+			"len(grid[%v])=%v", p, y, x, grid.Width())
 	}
 
-	grid[y][x] = Pixel{r, p.defaultPalette, hi}
+	grid.Set(x, y, Pixel{r, p.defaultPalette, hi})
 
 	return nil
 }

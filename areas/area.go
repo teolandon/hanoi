@@ -56,6 +56,16 @@ func NewFromSize(x, y int, size Size) Area {
 	return Area{x, x + size.Width(), y, y + size.Height()}
 }
 
+func (a Area) SubArea(sub Area) Area {
+	// TODO: Include more checks
+	return Area{a.x1 + sub.x1, a.x1 + sub.x2, a.y1 + sub.y1, a.y1 + a.y2}
+}
+
+func (a Area) Padded(p Padding) Area {
+	// TODO: Include more checks
+	return Area{a.x1 + p.Left, a.x2 - p.Right, a.y1 + p.Up, a.y2 - p.Down}
+}
+
 type Padding struct {
 	Up    int
 	Down  int

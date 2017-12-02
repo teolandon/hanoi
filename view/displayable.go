@@ -18,7 +18,7 @@ type Displayable interface {
 	Parent() Displayable
 	SetParent(p Displayable)
 	Draw()
-	setGrid(grid pixel.PixelGrid)
+	setGrid(grid pixel.SubGrid)
 }
 
 type Parent interface {
@@ -31,7 +31,7 @@ type displayable struct {
 	palette colors.Palette
 	layout  Layout
 	parent  Displayable
-	grid    pixel.PixelGrid
+	grid    pixel.SubGrid
 }
 
 func (d displayable) Padding() areas.Padding {
@@ -78,17 +78,17 @@ func (d *displayable) SetParent(dis Displayable) {
 	d.parent = dis
 }
 
-func (d *displayable) setGrid(g pixel.PixelGrid) {
+func (d *displayable) setGrid(g pixel.SubGrid) {
 	d.grid = g
 }
 
 func defaultDisplayable() displayable {
-	ret := displayable{*new(areas.Padding), *new(areas.Size), colors.DefaultPalette, Centered, nil, *new(pixel.PixelGrid)}
+	ret := displayable{*new(areas.Padding), *new(areas.Size), colors.DefaultPalette, Centered, nil, *new(pixel.SubGrid)}
 	return ret
 }
 
 func displayableWithSize(size areas.Size) displayable {
-	ret := displayable{*new(areas.Padding), size, colors.DefaultPalette, Centered, nil, *new(pixel.PixelGrid)}
+	ret := displayable{*new(areas.Padding), size, colors.DefaultPalette, Centered, nil, *new(pixel.SubGrid)}
 	return ret
 }
 
@@ -111,7 +111,7 @@ func (c *container) SetContent(d Displayable) {
 	c.content = d
 }
 
-func (c *container) setGrid(g pixel.PixelGrid, contentPadding areas.Padding) {
+func (c *container) setGrid(g pixel.SubGrid, contentPadding areas.Padding) {
 	c.displayable.setGrid(g)
 	c.content.setGrid(g.Padded(contentPadding))
 }
