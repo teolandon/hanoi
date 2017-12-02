@@ -24,6 +24,10 @@ type Area struct {
 	y2 int
 }
 
+func (a Area) Size() Size {
+	return Size{a.Width(), a.Height()}
+}
+
 func (a Area) Width() int {
 	return a.x2 - a.x1
 }

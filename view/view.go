@@ -75,15 +75,41 @@ func calculateGridsH(d Displayable, grid pixel.SubGrid) {
 	parent, ok := d.(Container)
 	if !ok {
 		return
-	}
+	} // Displayable is a parent
 
 	contentPadding := parent.ContentPadding()
 	contentGrid := grid.Padded(contentPadding)
+	layouted := layoutedArea(contentGrid.Size(), parent.Content())
+	contentGrid = contentGrid.SubGrid(layouted)
 	calculateGridsH(parent.Content(), contentGrid)
 }
 
 func drawView() {
 	drawDisplayable(main)
+}
+
+func layoutedArea(size areas.Size, d Displayable) areas.Area {
+	var width, height, x, y int
+	layout := d.Layout()
+	contentSize := d.Size()
+	log.Log("ContentSize for", d, ":", contentSize)
+	switch layout {
+	case FitToParent:
+		log.Log("Displayable", d, "is Fit To parent")
+		width = size.Width()
+		height = size.Height()
+		x = 0
+		y = 0
+	case Centered:
+		log.Log("Displayable", d, "is Centered")
+		width = contentSize.Width()
+		height = contentSize.Height()
+		x = (size.Width() - width) / 2
+		y = (size.Height() - height) / 2
+	default:
+		panic("nooo")
+	}
+	return areas.NewFromSize(x, y, areas.NewSize(width, height))
 }
 
 func drawDisplayable(d Displayable) {

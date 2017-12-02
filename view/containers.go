@@ -79,13 +79,13 @@ func (t TitledContainer) Draw() {
 	for i := range t.grid.GetLine(0) {
 		pw.Write(0, i, vLine)
 	}
-	pw.Write(0, t.grid.Height()-1, topRightCorner)
+	pw.Write(0, t.grid.Height()-1, bottomLeftCorner)
 	var i int
 	for i = 1; i < t.grid.Height()-1; i++ {
 		pw.Write(i, 0, hLine)
 		pw.Write(i, t.grid.Width()-1, hLine)
 	}
-	pw.Write(i, 0, bottomLeftCorner)
+	pw.Write(i, 0, topRightCorner)
 	for j := range t.grid.GetLine(0) {
 		pw.Write(i, j, vLine)
 	}

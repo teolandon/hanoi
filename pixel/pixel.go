@@ -95,6 +95,10 @@ func (p SubGrid) Padded(pad areas.Padding) SubGrid {
 	return p.SubGrid(p.area.Padded(pad))
 }
 
+func (p SubGrid) Size() areas.Size {
+	return p.area.Size()
+}
+
 func (p SubGrid) Width() int {
 	return p.area.Width()
 }
@@ -113,7 +117,7 @@ func (p SubGrid) Get(x, y int) (pixel Pixel, err error) {
 func (p SubGrid) GetLine(y int) []Pixel {
 	gy := y + p.area.Y1()
 	ret := p.grid.GetLine(gy)
-	return ret
+	return ret[p.area.X1():p.area.X2()]
 }
 
 func (p SubGrid) Set(x, y int, pixel Pixel) error {
@@ -127,6 +131,7 @@ func (p SubGrid) Set(x, y int, pixel Pixel) error {
 	gx := x + p.area.X1()
 	gy := y + p.area.Y1()
 
+	log.Log("Setting pixel at", gx, gy, "to [", pixel.Ch, "]")
 	p.grid.Set(gx, gy, pixel)
 
 	return nil
@@ -147,7 +152,7 @@ func (p PixelWriter) Write(x, y int, r rune) error {
 }
 
 func (p PixelWriter) WriteWithHighlight(x, y int, r rune, hi colors.Highlight) error {
-	grid := p.grid.grid
+	grid := p.grid
 
 	if y >= grid.Height() {
 		return fmt.Errorf("y-value out of bounds for PixelWriter %v's grid:\ny=%v,"+
