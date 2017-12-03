@@ -176,6 +176,18 @@ func (p PixelWriter) WriteWithHighlight(x, y int, r rune, hi colors.Highlight) e
 func (p PixelWriter) WriteStr(x, y int, str string) {
 	runes := []rune(str)
 	for i := range runes {
-		p.Write(x, y+i, runes[i])
+		p.Write(x+i, y, runes[i])
 	}
+}
+
+func (p PixelWriter) FillArea(area areas.Area, ch rune) {
+	for i := area.Y1(); i < area.Y2(); i++ {
+		for j := area.X1(); j < area.X2(); j++ {
+			p.Write(j, i, ch)
+		}
+	}
+}
+
+func (p PixelWriter) FillAll(ch rune) {
+	p.FillArea(areas.NewFromSize(0, 0, p.grid.Size()), ch)
 }
