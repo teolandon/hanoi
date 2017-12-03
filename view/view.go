@@ -109,7 +109,9 @@ func layoutedArea(size areas.Size, d Displayable) areas.Area {
 	default:
 		panic("nooo")
 	}
-	return areas.NewFromSize(x, y, areas.NewSize(width, height))
+	ret := areas.NewFromSize(x, y, areas.NewSize(width, height))
+	log.Log("Layout of size", size, "is", layout, "and results in", ret)
+	return ret
 }
 
 func drawDisplayable(d Displayable) {

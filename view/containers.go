@@ -75,21 +75,21 @@ func (t *TitledContainer) SetContent(c Displayable) {
 func (t TitledContainer) Draw() {
 	pw := pixel.NewWriter(t.Palette(), colors.Normal, t.grid)
 
-	pw.Write(0, 0, topLeftCorner)
 	for i := range t.grid.GetLine(0) {
-		pw.Write(0, i, vLine)
+		pw.Write(i, 0, hLine)
 	}
-	pw.Write(0, t.grid.Height()-1, bottomLeftCorner)
 	var i int
 	for i = 1; i < t.grid.Height()-1; i++ {
-		pw.Write(i, 0, hLine)
-		pw.Write(i, t.grid.Width()-1, hLine)
+		pw.Write(0, i, vLine)
+		pw.Write(t.grid.Width()-1, i, vLine)
 	}
-	pw.Write(i, 0, topRightCorner)
-	for j := range t.grid.GetLine(0) {
-		pw.Write(i, j, vLine)
+	for j := range t.grid.GetLine(i) {
+		pw.Write(j, i, hLine)
 	}
-	pw.Write(i, t.grid.Width()-1, bottomRightCorner)
+	pw.Write(0, 0, topLeftCorner)
+	pw.Write(0, i, bottomLeftCorner)
+	pw.Write(t.grid.Width()-1, 0, topRightCorner)
+	pw.Write(t.grid.Width()-1, i, bottomRightCorner)
 }
 
 func (t TitledContainer) DrawableArea() (x, y int, s areas.Size) {

@@ -62,7 +62,7 @@ func NewFromSize(x, y int, size Size) Area {
 
 func (a Area) SubArea(sub Area) Area {
 	// TODO: Include more checks
-	return Area{a.x1 + sub.x1, a.x1 + sub.x2, a.y1 + sub.y1, a.y1 + a.y2}
+	return Area{a.x1 + sub.x1, a.x1 + sub.x2, a.y1 + sub.y1, a.y1 + sub.y2}
 }
 
 func (a Area) Padded(p Padding) Area {

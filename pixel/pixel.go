@@ -95,6 +95,10 @@ func (p SubGrid) Padded(pad areas.Padding) SubGrid {
 	return p.SubGrid(p.area.Padded(pad))
 }
 
+func (p SubGrid) Area() areas.Area {
+	return p.area
+}
+
 func (p SubGrid) Size() areas.Size {
 	return p.area.Size()
 }
