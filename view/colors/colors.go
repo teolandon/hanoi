@@ -58,6 +58,7 @@ type Palette struct {
 }
 
 var (
+	MainPalette    = Palette{[8]Color{Black, White, Black, Magenta, Red, Cyan, White, Green}, [4]Attribute{AttrDefault, AttrDefault, AttrUnderline, AttrUnderline}}
 	DefaultPalette = Palette{[8]Color{Black, Blue, Black, Yellow, Green, White,
 		Magenta, Cyan}, [4]Attribute{AttrDefault, AttrDefault, AttrDefault, AttrDefault}}
 	InheritAll = Palette{[8]Color{Inherit, Inherit, Inherit, Inherit, Inherit, Inherit,

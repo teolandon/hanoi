@@ -3,9 +3,11 @@ package view
 import tb "github.com/nsf/termbox-go"
 import "github.com/teolandon/hanoi/pixel"
 import "github.com/teolandon/hanoi/areas"
+import "github.com/teolandon/hanoi/utils/log"
 import "github.com/teolandon/hanoi/view/colors"
 
 type mainContainer struct {
+	grid  pixel.SubGrid
 	child Displayable
 }
 
@@ -13,7 +15,13 @@ func (m mainContainer) String() string {
 	return "Main Container"
 }
 
-func (m mainContainer) Draw() {}
+func (m mainContainer) Draw() {
+	pw := pixel.NewWriter(m.Palette(), colors.Normal, termGrid.TotalSubGrid())
+
+	log.Log("Drawing main container:")
+	pw.FillAll(' ')
+	log.Log("Finished drawing main container")
+}
 
 func (mainContainer) HandleKey(e KeyEvent) {
 	if e.event.Ch == 'q' {
@@ -47,7 +55,7 @@ func (mainContainer) RealSize() areas.Size {
 func (mainContainer) SetSize(s areas.Size) {}
 
 func (mainContainer) Palette() colors.Palette {
-	return colors.DefaultPalette
+	return colors.MainPalette
 }
 
 func (mainContainer) SetPalette(p colors.Palette) {}
