@@ -49,7 +49,7 @@ func printGrid(grid pixel.SubGrid, x, y int) {
 			tb.SetCell(x+j, y+i, pixel.Ch, fg, bg)
 		}
 	}
-	tb.Sync()
+	tb.Flush()
 }
 
 func calculateGrids() {
@@ -189,7 +189,7 @@ func Init() error {
 			close(StoppedChannel)
 		}()
 		for {
-			tb.Sync()
+			tb.Flush()
 			select {
 			case ev := <-eventChannel:
 				executeEvent(ev, focused)
