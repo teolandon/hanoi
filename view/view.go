@@ -11,8 +11,9 @@ import "github.com/teolandon/hanoi/areas"
 var (
 	initialized = false
 	focused     Displayable
-	stopChannel chan bool
+	stopChannel chan bool // When closed, stops all goroutines running in hanoi
 	focusChange = make(chan bool)
+
 	// StoppedChannel is the channel that signals that
 	// the view has been stopped and exited out of.
 	StoppedChannel chan bool
@@ -26,19 +27,8 @@ type KeyEvent struct {
 	consumed bool
 }
 
-func chainOfFocus(f Displayable) {
-	if f == nil {
-		log.Log("End of chain")
-		return
-	}
-
-	log.Log(f)
-	chainOfFocus(f.Parent())
-}
-
 func SetFocused(f Displayable) {
 	focused = f
-	chainOfFocus(f)
 	if initialized {
 		focusChange <- true
 		acceptInput(f)
@@ -151,6 +141,12 @@ func getContentGrid(workingArea areas.Area, d Displayable) pixel.SubGrid {
 	return termGrid.SubGrid(area)
 }
 
+// IsInitialized returns the status of initialization
+// of hanoi.
+func IsInitialized() bool {
+	return initialized
+}
+
 func Init() error {
 	if tb.IsInit {
 		return errors.New("Termbox has already been initialized.")
@@ -211,7 +207,7 @@ func setSize(s areas.Size) {
 }
 
 func redraw() {
-	tb.Sync()
+	tb.Flush()
 	calculateGrids()
 	drawView()
 	printGrid(termGrid.TotalSubGrid(), 0, 0)
@@ -263,10 +259,4 @@ func Exit() {
 func terminalSize() areas.Size {
 	x, y := tb.Size()
 	return areas.NewSize(x, y)
-}
-
-func terminalArea() areas.Area {
-	x, y := tb.Size()
-	ret := areas.NewFromSize(0, 0, areas.NewSize(x, y))
-	return ret
 }
