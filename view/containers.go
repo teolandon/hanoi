@@ -1,7 +1,7 @@
 package view
 
 import "fmt"
-import "github.com/teolandon/hanoi/utils"
+import "github.com/teolandon/hanoi/utils/strutils"
 import "github.com/teolandon/hanoi/pixel"
 import "github.com/teolandon/hanoi/areas"
 import _ "github.com/teolandon/hanoi/utils/log"
@@ -129,7 +129,7 @@ func (t TextBox) Draw() {
 	pw := pixel.NewWriter(t.Palette(), colors.Normal, t.grid)
 
 	// paintArea(parentArea, t.Palette().NormalFG, t.Palette().NormalBG)
-	wrapped := utils.WrapText(t.Text, t.grid.Width(), t.grid.Height())
+	wrapped := strutils.WrapText(t.Text, t.grid.Width(), t.grid.Height())
 	for i, str := range wrapped {
 		pw.WriteStr(0, i, str)
 	}

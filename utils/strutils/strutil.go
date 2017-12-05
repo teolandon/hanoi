@@ -1,4 +1,4 @@
-package utils
+package strutils
 
 // WrapText wraps a long string into a slice of at most 'lines' strings, with
 // the condition that small-ish words are preserved, and each string in

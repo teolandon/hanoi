@@ -1,5 +1,7 @@
 package areas
 
+import "github.com/teolandon/hanoi/utils/log"
+
 type Size struct {
 	width  int
 	height int
@@ -15,6 +17,10 @@ func (s Size) Width() int {
 
 func (s Size) Height() int {
 	return s.height
+}
+
+func (s Size) Padded(p Padding) Area {
+	return Area{p.Left, s.width - p.Right, p.Up, s.height - p.Down}
 }
 
 type Area struct {
@@ -67,12 +73,15 @@ func (a Area) SubArea(sub Area) Area {
 
 func (a Area) Padded(p Padding) Area {
 	// TODO: Include more checks
-	return Area{a.x1 + p.Left, a.x2 - p.Right, a.y1 + p.Up, a.y2 - p.Down}
+	log.Log("Getting padding of area", a, "with padding", p)
+	ret := Area{a.x1 + p.Left, a.x2 - p.Right, a.y1 + p.Up, a.y2 - p.Down}
+	log.Log("Padded area:", ret)
+	return ret
 }
 
 type Padding struct {
-	Up    int
-	Down  int
 	Left  int
 	Right int
+	Up    int
+	Down  int
 }

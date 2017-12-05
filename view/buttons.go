@@ -2,7 +2,10 @@ package view
 
 import tb "github.com/nsf/termbox-go"
 import "github.com/teolandon/hanoi/areas"
+import "github.com/teolandon/hanoi/pixel"
 import "github.com/teolandon/hanoi/view/colors"
+import "github.com/teolandon/hanoi/utils/log"
+import "github.com/teolandon/hanoi/utils/strutils"
 
 // Button is a UI component that has a text label,
 // and performs an action when hit (using enter)
@@ -17,7 +20,13 @@ func (b Button) String() string {
 }
 
 func (b Button) Draw() {
-	// STUB
+	pw := pixel.NewWriter(b.Palette(), colors.Highlighted, b.grid)
+
+	log.Log("Drawing", b, "in grid", b.grid)
+	log.IncTab()
+	pw.FillAll(' ')
+	pw.WriteStrCentered(0, b.Text)
+	log.DecTab()
 }
 
 func (b Button) HandleKey(e KeyEvent) {
@@ -35,7 +44,7 @@ func (b Button) Size() areas.Size {
 func NewButton(text string) Button {
 	ret := Button{text, func() {}, defaultDisplayable()}
 	ret.SetPalette(colors.AlternatePalette)
-	ret.SetSize(areas.NewSize(5, 1))
+	ret.SetSize(areas.NewSize(strutils.StrLength(text)+2, 1))
 	return ret
 }
 

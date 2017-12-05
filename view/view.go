@@ -77,10 +77,15 @@ func calculateGridsH(d Displayable, grid pixel.SubGrid) {
 		return
 	} // Displayable is a parent
 
+	log.Log("Orig Grid:", grid)
 	contentPadding := parent.ContentPadding()
+	log.Log("ContentPadding:", contentPadding)
 	contentGrid := grid.Padded(contentPadding)
+	log.Log("ContentGrid:", contentGrid)
 	layouted := layoutedArea(contentGrid.Size(), parent.Content())
+	log.Log("layouted:", layouted)
 	contentGrid = contentGrid.SubGrid(layouted)
+	log.Log("ContentGrid:", contentGrid)
 	calculateGridsH(parent.Content(), contentGrid)
 }
 

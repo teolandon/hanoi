@@ -10,9 +10,10 @@ import (
 )
 
 var (
-	enabled bool = false
-	f       *os.File
-	logger  *log.Logger
+	enabled  bool = false
+	f        *os.File
+	logger   *log.Logger
+	tabLevel int
 )
 
 func Init() {
@@ -46,11 +47,36 @@ func Init() {
 	enabled = true
 }
 
+func IncTab() {
+	SetTab(tabLevel + 1)
+}
+
+func DecTab() {
+	SetTab(tabLevel - 1)
+}
+
+func SetTab(i int) {
+	if i < 0 {
+		tabLevel = 0
+	} else {
+		tabLevel = i
+	}
+}
+
 func Log(s ...interface{}) {
 	if enabled {
-		str := fmt.Sprintln(s)
+		tabs := getTabs()
+		str := fmt.Sprintln(tabs, s)
 		logger.Output(2, str)
 	}
+}
+
+func getTabs() string {
+	slice := make([]rune, tabLevel)
+	for i := range slice {
+		slice[i] = '\t'
+	}
+	return string(slice)
 }
 
 func Close() {

@@ -4,6 +4,7 @@ import "fmt"
 import "errors"
 import "github.com/teolandon/hanoi/areas"
 import "github.com/teolandon/hanoi/utils/log"
+import "github.com/teolandon/hanoi/utils/strutils"
 import "github.com/teolandon/hanoi/view/colors"
 
 type Pixel struct {
@@ -92,7 +93,7 @@ func (p SubGrid) SubGrid(a areas.Area) SubGrid {
 }
 
 func (p SubGrid) Padded(pad areas.Padding) SubGrid {
-	return p.SubGrid(p.area.Padded(pad))
+	return p.SubGrid(p.Size().Padded(pad))
 }
 
 func (p SubGrid) Area() areas.Area {
@@ -176,8 +177,14 @@ func (p PixelWriter) WriteWithHighlight(x, y int, r rune, hi colors.Highlight) e
 func (p PixelWriter) WriteStr(x, y int, str string) {
 	runes := []rune(str)
 	for i := range runes {
+		log.Log(i)
 		p.Write(x+i, y, runes[i])
 	}
+}
+
+func (p PixelWriter) WriteStrCentered(y int, str string) {
+	x := (p.grid.Width() / 2) - (strutils.StrLength(str) / 2)
+	p.WriteStr(x, y, str)
 }
 
 func (p PixelWriter) FillArea(area areas.Area, ch rune) {
