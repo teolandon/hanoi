@@ -128,7 +128,6 @@ type TextBox struct {
 func (t TextBox) Draw() {
 	pw := pixel.NewWriter(t.Palette(), colors.Normal, t.grid)
 
-	// paintArea(parentArea, t.Palette().NormalFG, t.Palette().NormalBG)
 	wrapped := strutils.WrapText(t.Text, t.grid.Width(), t.grid.Height())
 	for i, str := range wrapped {
 		pw.WriteStr(0, i, str)

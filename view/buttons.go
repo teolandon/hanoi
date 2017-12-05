@@ -42,7 +42,9 @@ func (b Button) Size() areas.Size {
 }
 
 func NewButton(text string) Button {
-	ret := Button{text, func() {}, defaultDisplayable()}
+	ret := Button{text, func() {
+		log.Log("unique")
+	}, defaultDisplayable()}
 	ret.SetPalette(colors.AlternatePalette)
 	ret.SetSize(areas.NewSize(strutils.StrLength(text)+2, 1))
 	return ret
