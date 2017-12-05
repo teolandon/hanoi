@@ -59,6 +59,7 @@ func printGrid(grid pixel.SubGrid, x, y int) {
 			tb.SetCell(x+j, y+i, pixel.Ch, fg, bg)
 		}
 	}
+	tb.Sync()
 }
 
 func calculateGrids() {
@@ -165,17 +166,16 @@ func Init() error {
 
 	tb.SetInputMode(tb.InputEsc)
 	tb.SetOutputMode(tb.OutputNormal)
-	tb.Clear(tb.ColorWhite, tb.ColorRed)
+	tb.Clear(tb.ColorWhite, tb.ColorWhite)
 
 	initialized = true
 	StoppedChannel = make(chan bool)
 	stopChannel = make(chan bool)
 
-	termSize := terminalSize()
-	termGrid = pixel.NewGrid(termSize.Width(), termSize.Height())
-
 	tb.Flush()
 	tb.HideCursor()
+
+	setSize(terminalSize())
 
 	acceptInput(focused)
 
@@ -206,13 +206,29 @@ func Init() error {
 	return nil
 }
 
+func setSize(s areas.Size) {
+	termGrid = pixel.NewGrid(s.Width(), s.Height())
+}
+
+func redraw() {
+	tb.Sync()
+	calculateGrids()
+	drawView()
+	printGrid(termGrid.TotalSubGrid(), 0, 0)
+}
+
 func pollEvents() {
 	for {
 		select {
 		default:
 			switch ev := tb.PollEvent(); ev.Type {
 			case tb.EventKey:
+				log.Log("Caught key event")
 				eventChannel <- KeyEvent{ev, false}
+			case tb.EventResize:
+				log.Log("Caught resize event")
+				setSize(areas.NewSize(ev.Width, ev.Height))
+				redraw()
 			default:
 				log.Log("Uncovered event:", ev)
 				time.Sleep(10 * time.Millisecond)

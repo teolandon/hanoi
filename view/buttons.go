@@ -16,7 +16,7 @@ type Button struct {
 }
 
 func (b Button) String() string {
-	return "Button with text \"" + b.Text + "\""
+	return "[Button with text \"" + b.Text + "\"]"
 }
 
 func (b Button) Draw() {

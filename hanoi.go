@@ -4,7 +4,7 @@ import "github.com/teolandon/hanoi/view"
 import "github.com/teolandon/hanoi/utils/log"
 
 func testMe() {
-	container := view.ButtonTitledContainer()
+	container := view.SimpleTitledContainer()
 	view.SetRoot(container)
 	view.SetFocused(container.Content())
 

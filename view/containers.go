@@ -140,14 +140,14 @@ func NewTextBox(text string) TextBox {
 	return ret
 }
 
-func SimpleTitledContainer() TitledContainer {
+func SimpleTitledContainer() *TitledContainer {
 	text := "Bigwordrighhere, butbigworderetoo, it, it has nice and small words, no long schlbberknockers to put you out of your lelelle"
 	textBox := NewTextBox(text)
 	textBox.SetLayout(FitToParent)
 	ret := TitledContainer{"Title", true, container{displayableWithSize(areas.NewSize(20, 10)), nil}}
 	ret.SetContent(&textBox)
 	ret.SetLayout(Centered)
-	return ret
+	return &ret
 }
 
 func ButtonTitledContainer() *TitledContainer {
