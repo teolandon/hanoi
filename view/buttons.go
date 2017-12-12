@@ -6,13 +6,14 @@ import "github.com/teolandon/hanoi/pixel"
 import "github.com/teolandon/hanoi/view/colors"
 import "github.com/teolandon/hanoi/utils/log"
 import "github.com/teolandon/hanoi/utils/strutils"
+import "github.com/teolandon/hanoi/structs"
 
 // Button is a UI component that has a text label,
 // and performs an action when hit (using enter)
 type Button struct {
 	Text string
 	Run  func()
-	displayable
+	structs.Displayable
 }
 
 func (b Button) String() string {
@@ -20,9 +21,9 @@ func (b Button) String() string {
 }
 
 func (b Button) Draw() {
-	pw := pixel.NewWriter(b.Palette(), colors.Highlighted, b.grid)
+	pw := pixel.NewWriter(b.Palette(), colors.Highlighted, b.Grid())
 
-	log.Log("Drawing", b, "in grid", b.grid)
+	log.Log("Drawing", b, "in grid", b.Grid())
 	log.IncTab()
 	pw.FillAll(' ')
 	pw.WriteStrCentered(0, b.Text)
@@ -37,14 +38,14 @@ func (b Button) HandleKey(e KeyEvent) {
 }
 
 func (b Button) Size() areas.Size {
-	orig := b.displayable.Size()
+	orig := b.Displayable.Size()
 	return areas.NewSize(orig.Width(), 1)
 }
 
 func NewButton(text string) Button {
 	ret := Button{text, func() {
 		log.Log("unique")
-	}, defaultDisplayable()}
+	}, structs.DefaultDisplayable()}
 	ret.SetPalette(colors.AlternatePalette)
 	ret.SetSize(areas.NewSize(strutils.StrLength(text)+2, 1))
 	return ret
@@ -60,7 +61,7 @@ func NewButtonWithAction(text string, action func()) Button {
 // together.
 type ButtonBar struct {
 	buttons []*Button
-	Displayable
+	structs.Displayable
 }
 
 func (bar ButtonBar) Buttons() []*Button {

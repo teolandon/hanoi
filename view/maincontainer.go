@@ -5,10 +5,11 @@ import "github.com/teolandon/hanoi/pixel"
 import "github.com/teolandon/hanoi/areas"
 import "github.com/teolandon/hanoi/utils/log"
 import "github.com/teolandon/hanoi/view/colors"
+import "github.com/teolandon/hanoi/view/displayable"
 
 type mainContainer struct {
 	grid  pixel.SubGrid
-	child Displayable
+	child displayable.Displayable
 }
 
 func (m mainContainer) String() string {
@@ -30,8 +31,8 @@ func (mainContainer) HandleKey(e KeyEvent) {
 	}
 }
 
-func (m mainContainer) Children() []Displayable {
-	ret := make([]Displayable, 1)
+func (m mainContainer) Children() []displayable.Displayable {
+	ret := make([]displayable.Displayable, 1)
 	ret[0] = m.child
 	return ret
 }
@@ -60,25 +61,29 @@ func (mainContainer) Palette() colors.Palette {
 
 func (mainContainer) SetPalette(p colors.Palette) {}
 
-func (mainContainer) Layout() Layout {
-	return FitToParent
+func (mainContainer) Layout() displayable.Layout {
+	return displayable.FitToParent
 }
 
-func (mainContainer) SetLayout(l Layout) {}
+func (mainContainer) SetLayout(l displayable.Layout) {}
 
-func (mainContainer) Parent() Displayable {
+func (mainContainer) Parent() displayable.Displayable {
 	return nil
 }
 
-func (mainContainer) SetParent(d Displayable) {}
+func (mainContainer) SetParent(d displayable.Displayable) {}
 
-func (mainContainer) setGrid(g pixel.SubGrid) {}
+func (m mainContainer) Grid() pixel.SubGrid {
+	return m.grid
+}
 
-func (m mainContainer) Content() Displayable {
+func (mainContainer) SetGrid(g pixel.SubGrid) {}
+
+func (m mainContainer) Content() displayable.Displayable {
 	return m.child
 }
 
-func (m mainContainer) SetContent(d Displayable) {
+func (m mainContainer) SetContent(d displayable.Displayable) {
 	m.child = d
 	d.SetParent(m)
 }

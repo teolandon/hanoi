@@ -3,7 +3,6 @@ package pixel
 import "fmt"
 import "errors"
 import "github.com/teolandon/hanoi/areas"
-import "github.com/teolandon/hanoi/utils/log"
 import "github.com/teolandon/hanoi/utils/strutils"
 import "github.com/teolandon/hanoi/view/colors"
 
@@ -41,7 +40,6 @@ func (p SquareGrid) Width() int {
 }
 
 func (p SquareGrid) GetLine(y int) []Pixel {
-	log.Log("Returning line from pixel grid. Grid height:", len(p.grid))
 	if y >= p.Height() || y < 0 {
 		return nil
 	}
@@ -136,7 +134,6 @@ func (p SubGrid) Set(x, y int, pixel Pixel) error {
 	gx := x + p.area.X1()
 	gy := y + p.area.Y1()
 
-	log.Log("Setting pixel at", gx, gy, "to [", pixel.Ch, "]")
 	p.grid.Set(gx, gy, pixel)
 
 	return nil
@@ -177,7 +174,6 @@ func (p PixelWriter) WriteWithHighlight(x, y int, r rune, hi colors.Highlight) e
 func (p PixelWriter) WriteStr(x, y int, str string) {
 	runes := []rune(str)
 	for i := range runes {
-		log.Log(i)
 		p.Write(x+i, y, runes[i])
 	}
 }

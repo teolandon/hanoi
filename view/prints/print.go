@@ -1,18 +1,18 @@
-package view
+package prints
 
 import tb "github.com/nsf/termbox-go"
 import "github.com/teolandon/hanoi/view/colors"
 
 const (
-	hLine             = '\u2500'
-	vLine             = '\u2502'
-	topLeftCorner     = '\u250C'
-	topRightCorner    = '\u2510'
-	bottomLeftCorner  = '\u2514'
-	bottomRightCorner = '\u2518'
+	HLine             = '\u2500'
+	VLine             = '\u2502'
+	TopLeftCorner     = '\u250C'
+	TopRightCorner    = '\u2510'
+	BottomLeftCorner  = '\u2514'
+	BottomRightCorner = '\u2518'
 )
 
-func printStr(s string, x, y int, foregroundColor, backgroundColor colors.Color) {
+func PrintStr(s string, x, y int, foregroundColor, backgroundColor colors.Color) {
 	printHelper(s, x, y, foregroundColor.AsTermAttr(), backgroundColor.AsTermAttr())
 	tb.Flush()
 }

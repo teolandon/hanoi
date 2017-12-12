@@ -7,10 +7,11 @@ import tb "github.com/nsf/termbox-go"
 import "github.com/teolandon/hanoi/utils/log"
 import "github.com/teolandon/hanoi/pixel"
 import "github.com/teolandon/hanoi/areas"
+import "github.com/teolandon/hanoi/view/displayable"
 
 var (
 	initialized = false
-	focused     Displayable
+	focused     displayable.Displayable
 	stopChannel chan bool // When closed, stops all goroutines running in hanoi
 	focusChange = make(chan bool)
 
@@ -27,7 +28,7 @@ type KeyEvent struct {
 	consumed bool
 }
 
-func SetFocused(f Displayable) {
+func SetFocused(f displayable.Displayable) {
 	focused = f
 	if initialized {
 		focusChange <- true
@@ -35,7 +36,7 @@ func SetFocused(f Displayable) {
 	}
 }
 
-func SetRoot(f Displayable) {
+func SetRoot(f displayable.Displayable) {
 	main.child = f
 	f.SetParent(main)
 }
@@ -56,14 +57,14 @@ func calculateGrids() {
 	calculateGridsH(main, termGrid.TotalSubGrid())
 }
 
-func calculateGridsH(d Displayable, grid pixel.SubGrid) {
+func calculateGridsH(d displayable.Displayable, grid pixel.SubGrid) {
 	if d == nil {
 		return
 	}
 
-	d.setGrid(grid)
+	d.SetGrid(grid)
 	log.Log("Set grid for", d, "to", grid)
-	parent, ok := d.(Container)
+	parent, ok := d.(displayable.Container)
 	if !ok {
 		return
 	} // Displayable is a parent
@@ -84,19 +85,19 @@ func drawView() {
 	drawDisplayable(main)
 }
 
-func layoutedArea(size areas.Size, d Displayable) areas.Area {
+func layoutedArea(size areas.Size, d displayable.Displayable) areas.Area {
 	var width, height, x, y int
 	layout := d.Layout()
 	contentSize := d.Size()
 	log.Log("ContentSize for", d, ":", contentSize)
 	switch layout {
-	case FitToParent:
+	case displayable.FitToParent:
 		log.Log("Displayable", d, "is Fit To parent")
 		width = size.Width()
 		height = size.Height()
 		x = 0
 		y = 0
-	case Centered:
+	case displayable.Centered:
 		log.Log("Displayable", d, "is Centered")
 		width = contentSize.Width()
 		height = contentSize.Height()
@@ -110,25 +111,25 @@ func layoutedArea(size areas.Size, d Displayable) areas.Area {
 	return ret
 }
 
-func drawDisplayable(d Displayable) {
+func drawDisplayable(d displayable.Displayable) {
 	log.Log("Drawing displayable", d)
 	d.Draw()
-	parent, ok := d.(Container)
+	parent, ok := d.(displayable.Container)
 	if ok {
 		log.Log("Displayable", d, "is parent, drawing child")
 		drawDisplayable(parent.Content())
 	}
 }
 
-func getContentGrid(workingArea areas.Area, d Displayable) pixel.SubGrid {
+func getContentGrid(workingArea areas.Area, d displayable.Displayable) pixel.SubGrid {
 	var width, height, x, y int
 	switch d.Layout() {
-	case FitToParent:
+	case displayable.FitToParent:
 		width = workingArea.Width()
 		height = workingArea.Height()
 		x = workingArea.X1()
 		y = workingArea.Y1()
-	case Centered:
+	case displayable.Centered:
 		width = d.Size().Width()
 		height = d.Size().Height()
 		x = workingArea.X1() + (workingArea.Width()-width)/2
@@ -235,7 +236,7 @@ func pollEvents() {
 	}
 }
 
-func acceptInput(f Displayable) {
+func acceptInput(f displayable.Displayable) {
 	go func() {
 		for {
 			select {
@@ -253,6 +254,7 @@ func acceptInput(f Displayable) {
 // Stops all goroutines that run the view, and quits the view,
 // reverting the terminal to normal mode
 func Exit() {
+	fmt.Println("closing this time")
 	close(stopChannel)
 }
 
