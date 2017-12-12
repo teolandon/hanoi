@@ -18,6 +18,8 @@ type TitledContainer struct {
 
 func (t *TitledContainer) SetGrid(g pixel.SubGrid) {
 	t.Container.SetGrid(g, t.ContentPadding())
+	log.Log("OGrid length:", g.Width())
+	log.Log("grid length:", len(t.Grid().GetLine(0)))
 }
 
 func (t TitledContainer) ContentPadding() areas.Padding {
@@ -63,7 +65,7 @@ func (t TitledContainer) Draw() {
 
 	log.Log("len(line2) =", len(t.Grid().GetLine(2)))
 	log.Log("bounds:", 1, t.Grid().Width()-1)
-	for i := 1; i < t.Grid().Width()-1; i++ {
+	for i := 0; i < t.Grid().Width()-2; i++ {
 		pw.Write(i+1, 1, ' ')
 		pw.Write(i+1, 2, prints.HLine)
 	}
@@ -74,14 +76,14 @@ func NewTitled() *TitledContainer {
 	text := "Bigwordrighhere, butbigworderetoo, it, it has nice and small words, no long schlbberknockers to put you out of your lelelle"
 	textBox := New(text)
 	textBox.SetLayout(displayable.FitToParent)
-	ret := TitledContainer{"Title", true, structs.NewContainer()}
+	ret := TitledContainer{"Title", true, structs.NewContainer(20, 10)}
 	ret.SetContent(&textBox)
 	ret.SetLayout(displayable.Centered)
 	return &ret
 }
 
 func NewWithButton() *TitledContainer {
-	ret := TitledContainer{"Test", true, structs.NewContainer()}
+	ret := TitledContainer{"Test", true, structs.NewContainer(20, 10)}
 	button := view.NewButton("OK")
 	ret.SetContent(&button)
 	log.Log("Content of buttoncontainer:", ret.Content())

@@ -106,7 +106,7 @@ func (c *Container) SetGrid(g pixel.SubGrid, contentPadding areas.Padding) {
 	c.content.SetGrid(g.Padded(contentPadding))
 }
 
-func NewContainer() Container {
-	d := DefaultDisplayable()
+func NewContainer(width, height int) Container {
+	d := DisplayableWithSize(areas.NewSize(width, height))
 	return Container{&d, nil}
 }
