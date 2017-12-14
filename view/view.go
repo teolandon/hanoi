@@ -4,6 +4,7 @@ import "errors"
 import "fmt"
 import "time"
 import tb "github.com/nsf/termbox-go"
+import "github.com/teolandon/hanoi/utils"
 import "github.com/teolandon/hanoi/utils/log"
 import "github.com/teolandon/hanoi/pixel"
 import "github.com/teolandon/hanoi/areas"
@@ -64,7 +65,7 @@ func calculateGridsH(d displayable.Displayable, grid pixel.SubGrid) {
 
 	d.SetGrid(grid)
 	log.Log("Set grid for", d, "to", grid)
-	parent, ok := d.(displayable.Container)
+	parent, ok := d.(displayable.SingleContainer)
 	if !ok {
 		return
 	} // Displayable is a parent
@@ -74,7 +75,7 @@ func calculateGridsH(d displayable.Displayable, grid pixel.SubGrid) {
 	log.Log("ContentPadding:", contentPadding)
 	contentGrid := grid.Padded(contentPadding)
 	log.Log("ContentGrid:", contentGrid)
-	layouted := layoutedArea(contentGrid.Size(), parent.Content())
+	layouted := utils.LayoutedArea(contentGrid.Size(), parent.Content())
 	log.Log("layouted:", layouted)
 	contentGrid = contentGrid.SubGrid(layouted)
 	log.Log("ContentGrid:", contentGrid)
@@ -85,36 +86,10 @@ func drawView() {
 	drawDisplayable(main)
 }
 
-func layoutedArea(size areas.Size, d displayable.Displayable) areas.Area {
-	var width, height, x, y int
-	layout := d.Layout()
-	contentSize := d.Size()
-	log.Log("ContentSize for", d, ":", contentSize)
-	switch layout {
-	case displayable.FitToParent:
-		log.Log("Displayable", d, "is Fit To parent")
-		width = size.Width()
-		height = size.Height()
-		x = 0
-		y = 0
-	case displayable.Centered:
-		log.Log("Displayable", d, "is Centered")
-		width = contentSize.Width()
-		height = contentSize.Height()
-		x = (size.Width() - width) / 2
-		y = (size.Height() - height) / 2
-	default:
-		panic("nooo")
-	}
-	ret := areas.NewFromSize(x, y, areas.NewSize(width, height))
-	log.Log("Layout of size", size, "is", layout, "and results in", ret)
-	return ret
-}
-
 func drawDisplayable(d displayable.Displayable) {
 	log.Log("Drawing displayable", d)
 	d.Draw()
-	parent, ok := d.(displayable.Container)
+	parent, ok := d.(displayable.SingleContainer)
 	if ok {
 		log.Log("Displayable", d, "is parent, drawing child")
 		drawDisplayable(parent.Content())

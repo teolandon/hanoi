@@ -87,26 +87,37 @@ func DisplayableWithSize(size areas.Size) Displayable {
 
 // Container
 
-type Container struct {
+type SingleContainer struct {
 	displ.Displayable
 	content displ.Displayable
 }
 
-func (c Container) Content() displ.Displayable {
+func (c SingleContainer) Content() displ.Displayable {
 	return c.content
 }
 
-func (c *Container) SetContent(d displ.Displayable) {
+func (c *SingleContainer) SetContent(d displ.Displayable) {
 	c.content = d
 	d.SetParent(c.Displayable)
 }
 
-func (c *Container) SetGrid(g pixel.SubGrid, contentPadding areas.Padding) {
+func (c *SingleContainer) SetGrid(g pixel.SubGrid, contentPadding areas.Padding) {
 	c.Displayable.SetGrid(g)
 	c.content.SetGrid(g.Padded(contentPadding))
 }
 
-func NewContainer(width, height int) Container {
+func NewContainer(width, height int) SingleContainer {
 	d := DisplayableWithSize(areas.NewSize(width, height))
-	return Container{&d, nil}
+	return SingleContainer{&d, nil}
+}
+
+// MultiContainer
+
+type MultiContainer struct {
+	displ.Displayable
+	children []displ.Displayable
+}
+
+func (c MultiContainer) Children() []displ.Displayable {
+	return c.children
 }

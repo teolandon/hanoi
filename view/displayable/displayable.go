@@ -49,8 +49,14 @@ type Parent interface {
 	Children() []Displayable
 }
 
-type Container interface {
+type SingleContainer interface {
 	Content() Displayable
 	SetContent(d Displayable)
 	ContentPadding() areas.Padding
+}
+
+type MultiContainer interface {
+	Children() []Displayable
+	// SetChildren(children []Displayable)
+	ContentAreas() []areas.Area
 }

@@ -13,11 +13,11 @@ import "github.com/teolandon/hanoi/utils/log"
 type TitledContainer struct {
 	Title           string
 	TitleVisibility bool
-	structs.Container
+	structs.SingleContainer
 }
 
 func (t *TitledContainer) SetGrid(g pixel.SubGrid) {
-	t.Container.SetGrid(g, t.ContentPadding())
+	t.SingleContainer.SetGrid(g, t.ContentPadding())
 	log.Log("OGrid length:", g.Width())
 	log.Log("grid length:", len(t.Grid().GetLine(0)))
 }
