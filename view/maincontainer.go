@@ -61,11 +61,11 @@ func (mainContainer) Palette() colors.Palette {
 
 func (mainContainer) SetPalette(p colors.Palette) {}
 
-func (mainContainer) Layout() displayable.Layout {
-	return displayable.FitToParent
+func (mainContainer) Layout() areas.Layout {
+	return areas.FitToParent
 }
 
-func (mainContainer) SetLayout(l displayable.Layout) {}
+func (mainContainer) SetLayout(l areas.Layout) {}
 
 func (mainContainer) Parent() displayable.Displayable {
 	return nil
@@ -77,7 +77,9 @@ func (m mainContainer) Grid() pixel.SubGrid {
 	return m.grid
 }
 
-func (mainContainer) SetGrid(g pixel.SubGrid) {}
+func (m mainContainer) SetGrid(g pixel.SubGrid) {
+	m.child.SetGrid(g)
+}
 
 func (m mainContainer) Content() displayable.Displayable {
 	return m.child

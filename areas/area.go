@@ -93,6 +93,19 @@ func (a Area) SubArea(sub Area) Area {
 	return Area{a.x1 + sub.x1, a.x1 + sub.x2, a.y1 + sub.y1, a.y1 + sub.y2}
 }
 
+func (a Area) Layouted(s Size, l Layout) Area {
+	switch l {
+	case FitToParent:
+		return a
+	case Centered:
+		x := (a.Width() - s.Width()) / 2
+		y := (a.Height() - s.Height()) / 2
+		return a.SubArea(NewFromSize(x, y, s))
+	default:
+		panic("Layouted: invalid layout given.")
+	}
+}
+
 // Padding describes 4 paddings to be applied to each side
 // of a Size or Area.
 type Padding struct {
@@ -101,3 +114,24 @@ type Padding struct {
 	Up    int
 	Down  int
 }
+
+// Layout is used as a field in elements to determine how they are
+// positioned within a container.
+type Layout uint8
+
+// Relative parses the coordinates and size as percentages of the
+// available area of the container.
+//
+// Absolute parses the coordinates as offsets from the top left corner
+// of the available area of the container, and the size as absolute.
+//
+// FitToParent ignores the coordinates and size of the element, and
+// instead assumes them to be the appropriate values to allow the element
+// to fit its parent container.
+//
+// Centered ignored the coordinates, but takes the size into account to
+// center the element in its parent container.
+const (
+	FitToParent Layout = iota
+	Centered
+)

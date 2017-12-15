@@ -2,7 +2,6 @@ package structs
 
 import "github.com/teolandon/hanoi/pixel"
 import "github.com/teolandon/hanoi/areas"
-import _ "github.com/teolandon/hanoi/utils/log"
 import "github.com/teolandon/hanoi/view/colors"
 import displ "github.com/teolandon/hanoi/view/displayable"
 
@@ -14,7 +13,7 @@ type Displayable struct {
 	padding areas.Padding
 	size    areas.Size
 	palette colors.Palette
-	layout  displ.Layout
+	layout  areas.Layout
 	parent  displ.Displayable
 	grid    pixel.SubGrid
 }
@@ -47,11 +46,11 @@ func (d *Displayable) SetPalette(p colors.Palette) {
 	d.palette = p
 }
 
-func (d Displayable) Layout() displ.Layout {
+func (d Displayable) Layout() areas.Layout {
 	return d.layout
 }
 
-func (d *Displayable) SetLayout(l displ.Layout) {
+func (d *Displayable) SetLayout(l areas.Layout) {
 	d.layout = l
 }
 
@@ -76,12 +75,12 @@ func (Displayable) Draw() {
 }
 
 func DefaultDisplayable() Displayable {
-	ret := Displayable{*new(areas.Padding), *new(areas.Size), colors.DefaultPalette, displ.Centered, nil, *new(pixel.SubGrid)}
+	ret := Displayable{*new(areas.Padding), *new(areas.Size), colors.DefaultPalette, areas.Centered, nil, *new(pixel.SubGrid)}
 	return ret
 }
 
 func DisplayableWithSize(size areas.Size) Displayable {
-	ret := Displayable{*new(areas.Padding), size, colors.DefaultPalette, displ.Centered, nil, *new(pixel.SubGrid)}
+	ret := Displayable{*new(areas.Padding), size, colors.DefaultPalette, areas.Centered, nil, *new(pixel.SubGrid)}
 	return ret
 }
 
@@ -101,9 +100,18 @@ func (c *SingleContainer) SetContent(d displ.Displayable) {
 	d.SetParent(c.Displayable)
 }
 
-func (c *SingleContainer) SetGrid(g pixel.SubGrid, contentPadding areas.Padding) {
-	c.Displayable.SetGrid(g)
-	c.content.SetGrid(g.Padded(contentPadding))
+// SetGrid is to be called by the wrapper of SingleContainer providing the
+// contentarea that is defined by the wrapper.  This will automate the setting
+// of the grid of the content.
+//
+// NOTE: The contentArea field might be phased out to a function in the
+// SingleContainer struct, so that the function is provided when the
+// embedded struct is created in the wrapper's constructor.
+func (c *SingleContainer) SetGrid(g pixel.SubGrid, contentArea areas.Area) {
+	layoutedGrid := g.Layouted(c.Size(), c.Layout())
+	c.Displayable.SetGrid(layoutedGrid)
+
+	c.content.SetGrid(g.SubGrid(contentArea))
 }
 
 func NewContainer(width, height int) SingleContainer {

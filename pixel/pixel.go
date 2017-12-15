@@ -90,6 +90,10 @@ func (p SubGrid) SubGrid(a areas.Area) SubGrid {
 	return SubGrid{p.area.SubArea(a), p.grid}
 }
 
+func (p SubGrid) Layouted(s areas.Size, l areas.Layout) SubGrid {
+	return SubGrid{p.area.Layouted(s, l), p.grid}
+}
+
 func (p SubGrid) Padded(pad areas.Padding) SubGrid {
 	return p.SubGrid(p.Size().Padded(pad))
 }

@@ -4,7 +4,6 @@ import "errors"
 import "fmt"
 import "time"
 import tb "github.com/nsf/termbox-go"
-import "github.com/teolandon/hanoi/utils"
 import "github.com/teolandon/hanoi/utils/log"
 import "github.com/teolandon/hanoi/pixel"
 import "github.com/teolandon/hanoi/areas"
@@ -65,21 +64,25 @@ func calculateGridsH(d displayable.Displayable, grid pixel.SubGrid) {
 
 	d.SetGrid(grid)
 	log.Log("Set grid for", d, "to", grid)
-	parent, ok := d.(displayable.SingleContainer)
-	if !ok {
-		return
-	} // Displayable is a parent
 
-	log.Log("Orig Grid:", grid)
-	contentPadding := parent.ContentPadding()
-	log.Log("ContentPadding:", contentPadding)
-	contentGrid := grid.Padded(contentPadding)
-	log.Log("ContentGrid:", contentGrid)
-	layouted := utils.LayoutedArea(contentGrid.Size(), parent.Content())
-	log.Log("layouted:", layouted)
-	contentGrid = contentGrid.SubGrid(layouted)
-	log.Log("ContentGrid:", contentGrid)
-	calculateGridsH(parent.Content(), contentGrid)
+	// The following code was commented out due to
+	// the behavior of the default struct for containers,
+	// which now automatically sets the grids for its children.
+
+	/* COMMENTED OUT
+		 -------------
+			parent, ok := d.(displayable.SingleContainer)
+			if !ok {
+				return
+			} // Displayable is a parent
+
+			contentPadding := parent.ContentPadding()
+			contentGrid := grid.Padded(contentPadding)
+			layouted := utils.LayoutedArea(contentGrid.Size(), parent.Content())
+			contentGrid = contentGrid.SubGrid(layouted)
+			calculateGridsH(parent.Content(), contentGrid)
+	   ------------
+	*/
 }
 
 func drawView() {
@@ -99,12 +102,12 @@ func drawDisplayable(d displayable.Displayable) {
 func getContentGrid(workingArea areas.Area, d displayable.Displayable) pixel.SubGrid {
 	var width, height, x, y int
 	switch d.Layout() {
-	case displayable.FitToParent:
+	case areas.FitToParent:
 		width = workingArea.Width()
 		height = workingArea.Height()
 		x = workingArea.X1()
 		y = workingArea.Y1()
-	case displayable.Centered:
+	case areas.Centered:
 		width = d.Size().Width()
 		height = d.Size().Height()
 		x = workingArea.X1() + (workingArea.Width()-width)/2
