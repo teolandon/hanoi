@@ -71,7 +71,7 @@ func (d *Displayable) SetGrid(g pixel.SubGrid) {
 }
 
 func (Displayable) Draw() {
-	// STUB
+	// STUB, to be overriden by the wrapper.
 }
 
 func DefaultDisplayable() Displayable {
@@ -95,9 +95,12 @@ func (c SingleContainer) Content() displ.Displayable {
 	return c.content
 }
 
-func (c *SingleContainer) SetContent(d displ.Displayable) {
-	c.content = d
-	d.SetParent(c.Displayable)
+// SetContent is to be called by the wrapper of SingleContainer providing the
+// content to be placed in the container, as well as the wrapper itself to
+// be set as the parent of the content
+func (c *SingleContainer) SetContent(content displ.Displayable, wrapper displ.Displayable) {
+	c.content = content
+	content.SetParent(wrapper)
 }
 
 // SetGrid is to be called by the wrapper of SingleContainer providing the

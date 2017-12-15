@@ -5,6 +5,7 @@ import "github.com/teolandon/hanoi/structs"
 import "github.com/teolandon/hanoi/pixel"
 import "github.com/teolandon/hanoi/areas"
 import "github.com/teolandon/hanoi/view"
+import "github.com/teolandon/hanoi/view/displayable"
 import "github.com/teolandon/hanoi/view/colors"
 import "github.com/teolandon/hanoi/view/prints"
 import "github.com/teolandon/hanoi/utils/log"
@@ -15,10 +16,12 @@ type TitledContainer struct {
 	structs.SingleContainer
 }
 
+func (t *TitledContainer) SetContent(content displayable.Displayable) {
+	t.SingleContainer.SetContent(content, t)
+}
+
 func (t *TitledContainer) SetGrid(g pixel.SubGrid) {
 	t.SingleContainer.SetGrid(g, t.ContentArea())
-	log.Log("OGrid length:", g.Width())
-	log.Log("grid length:", len(t.Grid().GetLine(0)))
 }
 
 func (t TitledContainer) ContentArea() areas.Area {

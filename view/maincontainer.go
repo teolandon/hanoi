@@ -90,6 +90,6 @@ func (m mainContainer) SetContent(d displayable.Displayable) {
 	d.SetParent(m)
 }
 
-func (m mainContainer) ContentPadding() areas.Padding {
-	return areas.Padding{0, 0, 0, 0}
+func (m mainContainer) ContentArea() areas.Area {
+	return m.grid.Area()
 }
